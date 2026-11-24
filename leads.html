@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lead Masuk - KOL Management</title>
+  <title>Lead Masuk (KOL) - KOL Management</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f43f5e'/%3E%3Cstop offset='100%25' stop-color='%23f472b6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='800' font-size='34' fill='white'%3EK%3C/text%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -46,8 +46,8 @@
   <main class="lg:ml-64 flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 min-w-0 w-full">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Lead Masuk & Pendaftar Form</h1>
-        <p class="text-xs text-slate-500 mt-0.5">Klik baris pendaftar untuk melihat preview detail lengkap, atau klik Approve untuk memasukkan ke Talent Database.</p>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Lead Masuk & Pendaftar KOL</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Lead khusus untuk kandidat KOL. Klik baris untuk preview lengkap, atau klik <strong>Approve</strong> (ACC) agar otomatis masuk ke <strong>Database KOL</strong>.</p>
       </div>
       <div class="flex flex-wrap items-center gap-2.5">
         <label class="cursor-pointer inline-flex items-center gap-2 bg-white hover:bg-rose-50 text-slate-700 border border-rose-200 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition">
@@ -56,7 +56,7 @@
           <input type="file" id="import-sheet-file" accept=".xlsx,.xls,.csv" class="hidden" />
         </label>
         <button id="btn-add-lead" class="inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl shadow-md shadow-rose-200 transition">
-          <i data-lucide="plus" class="w-4 h-4"></i><span>Input Lead Manual</span>
+          <i data-lucide="plus" class="w-4 h-4"></i><span>Input Lead KOL</span>
         </button>
       </div>
     </header>
@@ -65,13 +65,21 @@
       <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-rose-100 shadow-md shadow-rose-100/50 flex flex-wrap items-center gap-2.5">
         <div class="relative flex-1 min-w-[200px]">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-          <input type="text" id="search-lead" placeholder="Cari nama, username TikTok, WA, atau alamat..."
+          <input type="text" id="search-lead" placeholder="Cari nama lengkap, username, WA, niche, atau alamat..."
             class="w-full pl-10 pr-4 py-2 rounded-xl border border-rose-200/70 bg-rose-50/20 text-xs focus:bg-white focus:ring-2 focus:ring-rose-400 outline-none" />
         </div>
+        <select id="filter-lead-platform" class="px-3.5 py-2 rounded-xl border border-rose-200/70 bg-white text-xs text-slate-600 outline-none">
+          <option value="">Semua Platform</option>
+          <option value="Tiktok">Tiktok</option>
+          <option value="Shopee">Shopee</option>
+        </select>
+        <select id="filter-lead-niche" class="px-3.5 py-2 rounded-xl border border-rose-200/70 bg-white text-xs text-slate-600 outline-none">
+          <option value="">Semua Niche</option>
+        </select>
         <select id="filter-lead-status" class="px-3.5 py-2 rounded-xl border border-rose-200/70 bg-white text-xs text-slate-600 outline-none">
           <option value="">Semua Status</option>
-          <option value="Pending">Pending (Belum Approve)</option>
-          <option value="Approved">Approved (Sudah di Talent DB)</option>
+          <option value="Pending">Pending (Belum ACC)</option>
+          <option value="Approved">Approved (Sudah di Database KOL)</option>
         </select>
         <div class="text-xs font-semibold text-rose-600 bg-rose-50 px-3 py-2 rounded-xl">
           Total: <span id="lead-count">0</span> Lead
@@ -85,14 +93,14 @@
           <thead>
             <tr class="bg-rose-50/70 border-b border-rose-100 text-[10px] font-bold text-slate-600 uppercase tracking-wider">
               <th class="py-2.5 px-2.5">Nama Lengkap</th>
-              <th class="py-2.5 px-2.5">Username Tiktok</th>
-              <th class="py-2.5 px-2.5">Link Tiktok</th>
+              <th class="py-2.5 px-2.5">Username</th>
+              <th class="py-2.5 px-2.5 text-center">Platform</th>
+              <th class="py-2.5 px-2.5">Niche</th>
+              <th class="py-2.5 px-2.5">Link Akun</th>
               <th class="py-2.5 px-2.5 w-[125px]">Nomor Whatsapp</th>
-              <th class="py-2.5 px-2.5">GMV Tiktok</th>
+              <th class="py-2.5 px-2.5">GMV</th>
               <th class="py-2.5 px-2.5">Alamat Lengkap</th>
-              <th class="py-2.5 px-2.5 text-center">SOW Timeline</th>
               <th class="py-2.5 px-2.5 text-center">2-4 VT</th>
-              <th class="py-2.5 px-2.5 text-center">Boost 180d</th>
               <th class="py-2.5 px-2.5">Status</th>
               <th class="py-2.5 px-2.5 text-right lg:sticky lg:right-0 z-10 bg-rose-50/95">Aksi</th>
             </tr>
@@ -129,8 +137,8 @@
     <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4 shadow-2xl border border-rose-100">
       <div class="flex items-center justify-between border-b border-rose-100 pb-3">
         <div>
-          <h2 class="text-base font-bold text-slate-800">Input Lead / Talent Manual</h2>
-          <p class="text-[11px] text-slate-500">Isian disesuaikan dengan kolom Spreadsheet Form Pendaftaran.</p>
+          <h2 class="text-base font-bold text-slate-800">Input Lead KOL Manual</h2>
+          <p class="text-[11px] text-slate-500">Kandidat KOL masuk ke daftar Lead dulu sebelum di-ACC ke Database KOL.</p>
         </div>
         <button type="button" id="close-lead-x" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
@@ -142,30 +150,37 @@
             <input type="text" id="l-name" required placeholder="Contoh: Chicilia Greace" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm outline-none focus:ring-2 focus:ring-rose-400" />
           </div>
           <div>
+            <label class="block font-semibold text-slate-600 mb-1">Username *</label>
+            <input type="text" id="l-username" required placeholder="cgksis (tanpa @)" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm outline-none focus:ring-2 focus:ring-rose-400" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Platform *</label>
+            <select id="l-platform" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm bg-white outline-none focus:ring-2 focus:ring-rose-400">
+              <option value="Tiktok">Tiktok</option>
+              <option value="Shopee">Shopee</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Niche (Sama dengan Database KOL) *</label>
+            <select id="l-niche" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm bg-white outline-none focus:ring-2 focus:ring-rose-400"></select>
+          </div>
+          <div>
             <label class="block font-semibold text-slate-600 mb-1">Nomor Whatsapp *</label>
             <input type="text" id="l-wa" required placeholder="082398894015" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm outline-none focus:ring-2 focus:ring-rose-400" />
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Username Tiktok *</label>
-            <input type="text" id="l-tiktok" required placeholder="cgksis (tanpa @)" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm outline-none focus:ring-2 focus:ring-rose-400" />
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-600 mb-1">Link Tiktok</label>
+            <label class="block font-semibold text-slate-600 mb-1">Link Akun (TikTok / Shopee)</label>
             <input type="url" id="l-tiktok-link" placeholder="https://www.tiktok.com/@cgksis" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm outline-none focus:ring-2 focus:ring-rose-400" />
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">GMV Tiktok</label>
+            <label class="block font-semibold text-slate-600 mb-1">GMV</label>
             <input type="text" id="l-gmv" placeholder="Contoh: 1500000 atau 6,3 jt" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm outline-none focus:ring-2 focus:ring-rose-400" />
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Niche Default (Saat Masuk Talent DB)</label>
-            <select id="l-niche" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm bg-white outline-none focus:ring-2 focus:ring-rose-400">
-              <option value="Beauty">Beauty</option>
-              <option value="Fashion">Fashion</option>
-              <option value="Daily Life">Daily Life</option>
-              <option value="Food & Beverage">Food & Beverage</option>
-              <option value="Comedy">Comedy</option>
-              <option value="Family">Family</option>
+            <label class="block font-semibold text-slate-600 mb-1">Bersedia Membuat 2-4 VT?</label>
+            <select id="l-vt-ok" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm bg-white font-semibold outline-none focus:ring-2 focus:ring-rose-400">
+              <option value="Ya">Ya</option>
+              <option value="Tidak">Tidak</option>
             </select>
           </div>
         </div>
@@ -176,33 +191,9 @@
             class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm outline-none focus:ring-2 focus:ring-rose-400"></textarea>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-rose-50/50 p-3.5 rounded-2xl border border-rose-100">
-          <div>
-            <label class="block font-semibold text-slate-600 mb-1">Bersedia SOW sesuai Timeline?</label>
-            <select id="l-sow-ok" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-xs bg-white font-semibold">
-              <option value="Ya">Ya</option>
-              <option value="Tidak">Tidak</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-600 mb-1">Bersedia Membuat 2-4 VT?</label>
-            <select id="l-vt-ok" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-xs bg-white font-semibold">
-              <option value="Ya">Ya</option>
-              <option value="Tidak">Tidak</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-600 mb-1">Bersedia Boostcode 180 Days?</label>
-            <select id="l-boost-ok" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-xs bg-white font-semibold">
-              <option value="Ya">Ya</option>
-              <option value="Tidak">Tidak</option>
-            </select>
-          </div>
-        </div>
-
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" id="close-lead" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-semibold shadow-md shadow-rose-200">Simpan Lead</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-semibold shadow-md shadow-rose-200">Simpan Lead KOL</button>
         </div>
       </form>
     </div>
@@ -210,13 +201,28 @@
 
   <script type="module">
     import {
-      initPageLayout, showToast, showAlert, showConfirm,
+      initPageLayout, showToast, showAlert, showConfirm, NICHE_MAP,
       subscribeDemoCollection, setDemoItem, updateDemoItem, removeDemoItem
     } from "./js/auth.js";
 
     const user = initPageLayout("leads", ["owner", "kol_specialist"]);
     let leads = [];
     let masterKols = [];
+
+    // Populate Niche dropdowns identically to Database KOL (NICHE_MAP)
+    const filterNicheEl = document.getElementById("filter-lead-niche");
+    const modalNicheEl = document.getElementById("l-niche");
+    Object.keys(NICHE_MAP).forEach(n => {
+      const o1 = document.createElement("option");
+      o1.value = n;
+      o1.textContent = n;
+      filterNicheEl.appendChild(o1);
+
+      const o2 = document.createElement("option");
+      o2.value = n;
+      o2.textContent = n;
+      modalNicheEl.appendChild(o2);
+    });
 
     const btnScrollTop = document.getElementById("btn-scroll-top");
     window.addEventListener("scroll", () => {
@@ -248,40 +254,55 @@
       return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isYes ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}">${val || "-"}</span>`;
     }
 
+    function buildDefaultUrl(platform, username) {
+      const u = normU(username);
+      if (!u) return "";
+      if (String(platform || "").toLowerCase() === "shopee") {
+        return `https://shopee.co.id/${u}`;
+      }
+      return `https://www.tiktok.com/@${u}`;
+    }
+
     async function approveLeadById(leadId) {
       const lead = leads.find(x => x.id === leadId);
       if (!lead) return;
 
+      const uHandle = normU(lead.username || lead.tiktok);
+      const plat = lead.platform || "Tiktok";
+
       const confirmed = await showConfirm(
-        "Approve ke Talent Database?",
-        `Konfirmasi memasukkan "${lead.name}" (@${normU(lead.tiktok)}) ke Talent Database Master?`,
-        "Ya, Approve Sekarang"
+        "ACC ke Database KOL?",
+        `Konfirmasi memasukkan "${lead.name}" (@${uHandle} • ${plat}) ke Database KOL?`,
+        "Ya, ACC Sekarang"
       );
       if (!confirmed) return;
 
       const dup = masterKols.find(k =>
         (normWA(lead.wa) && k.wa === normWA(lead.wa)) ||
-        (normU(lead.tiktok) && k.tiktok === normU(lead.tiktok))
+        (uHandle && (k.tiktok === uHandle || k.ig === uHandle))
       );
       if (dup) {
-        return showAlert("Duplikat Terdeteksi!", `Kreator ini sudah ada di Talent Database dengan nama "${dup.name}" (${dup.id}).`, "warning");
+        return showAlert("Duplikat Terdeteksi!", `Kreator ini sudah ada di Database KOL dengan nama "${dup.name}" (${dup.id}).`, "warning");
       }
 
       const approverName = user?.name || "System";
       const now = new Date().toISOString();
+      const accountUrl = lead.tiktokLink || buildDefaultUrl(plat, uHandle);
+
       const newKol = {
         id: "KOL-" + Date.now().toString().slice(-6),
         sourceLeadId: lead.id,
-        name: lead.name || normU(lead.tiktok) || "Kreator",
+        name: lead.name || uHandle || "Kreator",
+        contact: lead.wa || "",
         wa: normWA(lead.wa),
         ig: "",
-        tiktok: normU(lead.tiktok),
-        tiktokLink: lead.tiktokLink || "",
+        tiktok: uHandle,
+        tiktokLink: accountUrl,
         address: lead.address || "",
         aliases: [],
-        niche: lead.niche || "Beauty",
+        niche: NICHE_MAP[lead.niche] ? lead.niche : "Beauty",
         tier: "Nano",
-        er: `GMV: ${lead.gmv || "-"}`,
+        er: lead.gmv && lead.gmv !== "-" ? `GMV (${plat}): ${lead.gmv}` : "",
         markup: 30,
         rates: { story: 0, reels: 0, tiktok: 0, kuning: 0, boost: 0, visit: 0 },
         rateUpdatedAt: now,
@@ -297,7 +318,7 @@
         approvedAt: now
       });
       closeDetailModal();
-      showToast(`${newKol.name} di-approve!`);
+      showToast(`${newKol.name} di-ACC ke Database KOL!`);
     }
 
     async function deleteLeadById(leadId) {
@@ -320,8 +341,9 @@
     });
 
     function openLeadDetailModal(lead) {
-      const ttHandle = normU(lead.tiktok);
-      const ttUrl = lead.tiktokLink || (ttHandle ? `https://www.tiktok.com/@${ttHandle}` : "");
+      const uHandle = normU(lead.username || lead.tiktok);
+      const plat = lead.platform || "Tiktok";
+      const accUrl = lead.tiktokLink || buildDefaultUrl(plat, uHandle);
       const waDigits = normWA(lead.wa);
       const isApproved = lead.status === "Approved";
 
@@ -331,7 +353,7 @@
         ? "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700"
         : "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700";
 
-      document.getElementById("detail-name").textContent = lead.name || (ttHandle ? `@${ttHandle}` : "Detail Pendaftar");
+      document.getElementById("detail-name").textContent = lead.name || (uHandle ? `@${uHandle}` : "Detail Pendaftar");
 
       document.getElementById("detail-body").innerHTML = `
         ${isApproved ? `
@@ -343,23 +365,28 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="p-3 rounded-2xl bg-rose-50/40 border border-rose-100">
-            <p class="text-[11px] text-slate-400 font-semibold">Username TikTok</p>
-            <p class="font-bold text-slate-800 mt-0.5">${ttHandle ? `@${ttHandle}` : "-"}</p>
+            <p class="text-[11px] text-slate-400 font-semibold">Username (${plat})</p>
+            <p class="font-bold text-slate-800 mt-0.5">${uHandle ? `@${uHandle}` : "-"}</p>
+          </div>
+          <div class="p-3 rounded-2xl bg-rose-50/40 border border-rose-100">
+            <p class="text-[11px] text-slate-400 font-semibold">Niche</p>
+            <p class="font-bold text-rose-600 mt-0.5">${lead.niche || "-"}</p>
           </div>
           <div class="p-3 rounded-2xl bg-rose-50/40 border border-rose-100">
             <p class="text-[11px] text-slate-400 font-semibold">Nomor WhatsApp</p>
             <p class="font-bold text-slate-800 mt-0.5">${lead.wa || "-"}</p>
           </div>
           <div class="p-3 rounded-2xl bg-rose-50/40 border border-rose-100">
-            <p class="text-[11px] text-slate-400 font-semibold">GMV TikTok</p>
+            <p class="text-[11px] text-slate-400 font-semibold">GMV</p>
             <p class="font-bold text-rose-600 mt-0.5">${lead.gmv || "-"}</p>
           </div>
-          <div class="p-3 rounded-2xl bg-rose-50/40 border border-rose-100">
-            <p class="text-[11px] text-slate-400 font-semibold">Link Akun TikTok</p>
-            ${ttUrl
-              ? `<a href="${ttUrl}" target="_blank" rel="noopener noreferrer" class="text-rose-600 underline font-semibold break-all mt-0.5 block">${ttUrl}</a>`
-              : `<p class="text-slate-500 mt-0.5">-</p>`}
-          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-rose-50/40 border border-rose-100">
+          <p class="text-[11px] text-slate-400 font-semibold">Link Akun</p>
+          ${accUrl
+            ? `<a href="${accUrl}" target="_blank" rel="noopener noreferrer" class="text-rose-600 underline font-semibold break-all mt-0.5 block">${accUrl}</a>`
+            : `<p class="text-slate-500 mt-0.5">-</p>`}
         </div>
 
         <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/70">
@@ -367,19 +394,9 @@
           <p class="text-slate-800 leading-relaxed mt-1 whitespace-pre-line">${lead.address || "-"}</p>
         </div>
 
-        <div class="grid grid-cols-3 gap-2 text-center">
-          <div class="p-2.5 rounded-2xl border border-rose-100 bg-white">
-            <p class="text-[10px] text-slate-400 font-semibold mb-1">SOW Timeline</p>
-            ${yesBadge(lead.sowTimeline)}
-          </div>
-          <div class="p-2.5 rounded-2xl border border-rose-100 bg-white">
-            <p class="text-[10px] text-slate-400 font-semibold mb-1">2-4 VT</p>
-            ${yesBadge(lead.makeVt)}
-          </div>
-          <div class="p-2.5 rounded-2xl border border-rose-100 bg-white">
-            <p class="text-[10px] text-slate-400 font-semibold mb-1">Boost 180d</p>
-            ${yesBadge(lead.boostCode180)}
-          </div>
+        <div class="p-2.5 rounded-2xl border border-rose-100 bg-white flex items-center justify-between">
+          <span class="text-xs text-slate-500 font-semibold">Bersedia Membuat 2-4 VT</span>
+          ${yesBadge(lead.makeVt)}
         </div>
       `;
 
@@ -391,8 +408,8 @@
         <div class="flex items-center gap-2">
           <button type="button" id="modal-btn-close" class="px-4 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-600">Tutup</button>
           ${!isApproved
-            ? `<button type="button" id="modal-btn-approve" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow-sm transition">Approve ke Talent DB</button>`
-            : `<span class="text-xs font-bold text-emerald-600 px-3">Tersimpan di Talent DB</span>`}
+            ? `<button type="button" id="modal-btn-approve" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow-sm transition">ACC ke Database KOL</button>`
+            : `<span class="text-xs font-bold text-emerald-600 px-3">Tersimpan di Database KOL</span>`}
         </div>
       `;
 
@@ -407,41 +424,56 @@
 
     function render() {
       const q = (document.getElementById("search-lead").value || "").trim().toLowerCase();
+      const platFilter = document.getElementById("filter-lead-platform").value;
+      const nicheFilter = document.getElementById("filter-lead-niche").value;
       const stFilter = document.getElementById("filter-lead-status").value;
 
       const filtered = leads.filter(l => {
         const st = l.status || "Pending";
+        const plat = l.platform || "Tiktok";
+        const uHandle = normU(l.username || l.tiktok);
         const matchSt = !stFilter || st === stFilter;
+        const matchPlat = !platFilter || plat.toLowerCase() === platFilter.toLowerCase();
+        const matchNiche = !nicheFilter || (l.niche || "") === nicheFilter;
         const matchQ = !q ||
           (l.name || "").toLowerCase().includes(q) ||
-          (l.tiktok || "").toLowerCase().includes(q) ||
+          uHandle.includes(q) ||
           (l.wa || "").includes(q) ||
+          (l.niche || "").toLowerCase().includes(q) ||
           (l.address || "").toLowerCase().includes(q) ||
           (l.approvedBy || "").toLowerCase().includes(q);
-        return matchSt && matchQ;
+        return matchSt && matchPlat && matchNiche && matchQ;
       });
 
       document.getElementById("lead-count").textContent = filtered.length;
       const tbody = document.getElementById("leads-tbody");
 
       tbody.innerHTML = filtered.map(l => {
-        const ttHandle = normU(l.tiktok);
-        const ttUrl = l.tiktokLink || (ttHandle ? `https://www.tiktok.com/@${ttHandle}` : "");
+        const uHandle = normU(l.username || l.tiktok);
+        const plat = l.platform || "Tiktok";
+        const accUrl = l.tiktokLink || buildDefaultUrl(plat, uHandle);
         const isApproved = l.status === "Approved";
+        const platBadge = plat.toLowerCase() === "shopee"
+          ? "bg-orange-500 text-white"
+          : "bg-slate-800 text-white";
 
         return `
           <tr data-row-id="${l.id}" class="lead-row group cursor-pointer hover:bg-rose-50/40 transition">
             <td class="py-2.5 px-2.5 font-bold text-slate-800 max-w-[160px] truncate">${l.name || "-"}</td>
-            <td class="py-2.5 px-2.5 font-medium text-slate-700 max-w-[135px] truncate">${ttHandle ? `@${ttHandle}` : "-"}</td>
+            <td class="py-2.5 px-2.5 font-medium text-slate-700 max-w-[135px] truncate">${uHandle ? `@${uHandle}` : "-"}</td>
+            <td class="py-2.5 px-2.5 text-center">
+              <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${platBadge}">${plat}</span>
+            </td>
             <td class="py-2.5 px-2.5">
-              ${ttUrl ? `<a href="${ttUrl}" target="_blank" rel="noopener noreferrer" class="link-stop text-rose-600 underline inline-block max-w-[145px] truncate">${ttUrl}</a>` : "-"}
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-600">${l.niche || "-"}</span>
+            </td>
+            <td class="py-2.5 px-2.5">
+              ${accUrl ? `<a href="${accUrl}" target="_blank" rel="noopener noreferrer" class="link-stop text-rose-600 underline inline-block max-w-[145px] truncate">${accUrl}</a>` : "-"}
             </td>
             <td class="py-2.5 px-2.5 font-mono text-slate-700 w-[125px] max-w-[125px] truncate" title="${(l.wa || "").replace(/"/g, "&quot;")}">${l.wa || "-"}</td>
             <td class="py-2.5 px-2.5 font-semibold text-slate-700 max-w-[115px] truncate">${l.gmv || "-"}</td>
             <td class="py-2.5 px-2.5 max-w-[180px] truncate text-slate-600">${l.address || "-"}</td>
-            <td class="py-2.5 px-2.5 text-center">${yesBadge(l.sowTimeline)}</td>
             <td class="py-2.5 px-2.5 text-center">${yesBadge(l.makeVt)}</td>
-            <td class="py-2.5 px-2.5 text-center">${yesBadge(l.boostCode180)}</td>
             <td class="py-2.5 px-2.5">
               <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isApproved ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}">
                 ${l.status || "Pending"}
@@ -450,13 +482,13 @@
             </td>
             <td class="py-2.5 px-2.5 text-right lg:sticky lg:right-0 z-10 bg-white group-hover:bg-[#fff5f7] space-x-1">
               ${!isApproved
-                ? `<button type="button" data-id="${l.id}" class="btn-approve px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-semibold shadow-xs transition">Approve</button>
+                ? `<button type="button" data-id="${l.id}" class="btn-approve px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-semibold shadow-xs transition">ACC</button>
                    <button type="button" data-del="${l.id}" class="btn-del-lead px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-red-100 text-slate-500 hover:text-red-600 text-[11px] font-semibold transition">Hapus</button>`
-                : `<span class="text-[11px] text-emerald-600 font-semibold whitespace-nowrap">Tersimpan di Talent DB</span>`}
+                : `<span class="text-[11px] text-emerald-600 font-semibold whitespace-nowrap">Masuk Database KOL</span>`}
             </td>
           </tr>
         `;
-      }).join("") || `<tr><td colspan="11" class="py-10 text-center text-slate-400">Belum ada data lead.</td></tr>`;
+      }).join("") || `<tr><td colspan="11" class="py-10 text-center text-slate-400">Belum ada data lead KOL.</td></tr>`;
     }
 
     document.getElementById("leads-tbody").addEventListener("click", async (e) => {
@@ -489,34 +521,39 @@
     document.getElementById("close-lead").addEventListener("click", closeLeadModal);
     document.getElementById("close-lead-x").addEventListener("click", closeLeadModal);
 
-    document.getElementById("l-tiktok").addEventListener("input", (e) => {
-      const u = normU(e.target.value);
+    function syncAutoAccountLink() {
+      const u = normU(document.getElementById("l-username").value);
+      const plat = document.getElementById("l-platform").value;
       const linkEl = document.getElementById("l-tiktok-link");
       if (!linkEl.dataset.manual) {
-        linkEl.value = u ? `https://www.tiktok.com/@${u}` : "";
+        linkEl.value = buildDefaultUrl(plat, u);
       }
-    });
+    }
+
+    document.getElementById("l-username").addEventListener("input", syncAutoAccountLink);
+    document.getElementById("l-platform").addEventListener("change", syncAutoAccountLink);
     document.getElementById("l-tiktok-link").addEventListener("input", (e) => {
       e.target.dataset.manual = e.target.value ? "1" : "";
     });
 
     document.getElementById("form-lead").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const ttUser = normU(document.getElementById("l-tiktok").value);
-      const ttLink = document.getElementById("l-tiktok-link").value.trim() || (ttUser ? `https://www.tiktok.com/@${ttUser}` : "");
+      const uHandle = normU(document.getElementById("l-username").value);
+      const plat = document.getElementById("l-platform").value;
+      const accLink = document.getElementById("l-tiktok-link").value.trim() || buildDefaultUrl(plat, uHandle);
 
       const item = {
         id: "LD-" + Date.now().toString().slice(-6),
         name: document.getElementById("l-name").value.trim(),
-        tiktok: ttUser,
-        tiktokLink: ttLink,
+        username: uHandle,
+        tiktok: uHandle,
+        platform: plat,
+        niche: document.getElementById("l-niche").value,
+        tiktokLink: accLink,
         wa: document.getElementById("l-wa").value.trim(),
         gmv: document.getElementById("l-gmv").value.trim() || "-",
         address: document.getElementById("l-address").value.trim() || "-",
-        sowTimeline: document.getElementById("l-sow-ok").value,
         makeVt: document.getElementById("l-vt-ok").value,
-        boostCode180: document.getElementById("l-boost-ok").value,
-        niche: document.getElementById("l-niche").value,
         status: "Pending",
         approvedBy: "",
         inputBy: user?.name || "Manual"
@@ -526,7 +563,7 @@
       e.target.reset();
       delete document.getElementById("l-tiktok-link").dataset.manual;
       closeLeadModal();
-      showToast("Lead baru berhasil disimpan!");
+      showToast("Lead KOL baru berhasil disimpan!");
     });
 
     function getColVal(rowObj, candidateKeys, fallbackIndex = -1) {
@@ -567,33 +604,40 @@
         for (const r of rows) {
           const name = getColVal(r, ["nama lengkap", "nama", "full name"], 1);
           const wa = getColVal(r, ["nomor whatsapp", "nomor wa", "whatsapp", "no wa", "wa"], 4);
-          const rawTt = getColVal(r, ["username tiktok", "username tt", "tiktok"], 2);
-          const rawLink = getColVal(r, ["link tiktok", "link akun tiktok", "url tiktok"], 3);
+          const rawUser = getColVal(r, ["username", "username tiktok", "username tt", "tiktok", "shopee"], 2);
+          const rawLink = getColVal(r, ["link akun", "link tiktok", "link shopee", "url"], 3);
+          const rawPlat = getColVal(r, ["platform"], -1);
+          const rawNiche = getColVal(r, ["niche"], -1);
 
-          let tt = normU(rawTt);
-          if (!tt && rawLink) {
-            const m = rawLink.match(/tiktok\.com\/@?([^/?#]+)/i);
-            if (m) tt = normU(m[1]);
+          let uHandle = normU(rawUser);
+          if (!uHandle && rawLink) {
+            const m = rawLink.match(/(?:tiktok\.com\/@?|shopee\.co\.id\/)([^/?#]+)/i);
+            if (m) uHandle = normU(m[1]);
           }
 
-          const cleanName = name || (tt ? `@${tt}` : "");
-          if (!cleanName && !wa && !tt) continue;
+          let plat = "Tiktok";
+          if (rawPlat.toLowerCase().includes("shopee") || rawLink.toLowerCase().includes("shopee")) {
+            plat = "Shopee";
+          }
+
+          const matchedNiche = Object.keys(NICHE_MAP).find(n => n.toLowerCase() === rawNiche.toLowerCase()) || "Beauty";
+
+          const cleanName = name || (uHandle ? `@${uHandle}` : "");
+          if (!cleanName && !wa && !uHandle) continue;
 
           const cleanWa = normWA(wa);
           const cleanNameKey = normName(cleanName);
 
           const existingIdx = leads.findIndex(x => {
             const hitWa = cleanWa && normWA(x.wa) && normWA(x.wa) === cleanWa;
-            const hitTt = tt && normU(x.tiktok) && normU(x.tiktok) === tt;
+            const hitU = uHandle && normU(x.username || x.tiktok) && normU(x.username || x.tiktok) === uHandle;
             const hitName = cleanNameKey && cleanNameKey !== "-" && normName(x.name) === cleanNameKey;
-            return hitWa || hitTt || hitName;
+            return hitWa || hitU || hitName;
           });
 
-          const gmvVal = getColVal(r, ["gmv tiktok", "gmv"], 5) || "-";
+          const gmvVal = getColVal(r, ["gmv tiktok", "gmv shopee", "gmv"], 5) || "-";
           const addrVal = getColVal(r, ["alamat lengkap", "alamat"], 6) || "-";
-          const sowVal = getColVal(r, ["bersedia meyelesaikan sow sesuai timeline", "bersedia menyelesaikan sow sesuai timeline", "bersedia sow"], 7) || "Ya";
           const vtVal = getColVal(r, ["bersedia membuat 2-4 vt", "bersedia 2-4 vt"], 8) || "Ya";
-          const boostVal = getColVal(r, ["bersedia boostcode 180 days", "bersedia boostcode"], 9) || "Ya";
 
           if (existingIdx >= 0) {
             const target = leads[existingIdx];
@@ -603,8 +647,9 @@
               target.name = cleanName;
               hasChange = true;
             }
-            if (tt && !target.tiktok) {
-              target.tiktok = tt;
+            if (uHandle && !(target.username || target.tiktok)) {
+              target.username = uHandle;
+              target.tiktok = uHandle;
               hasChange = true;
             }
             if (rawLink && !target.tiktokLink) {
@@ -632,15 +677,15 @@
           const item = {
             id: "LD-" + Date.now().toString().slice(-5) + "-" + (added + updated + skippedDup),
             name: cleanName || "-",
-            tiktok: tt,
-            tiktokLink: rawLink || (tt ? `https://www.tiktok.com/@${tt}` : ""),
+            username: uHandle,
+            tiktok: uHandle,
+            platform: plat,
+            niche: matchedNiche,
+            tiktokLink: rawLink || buildDefaultUrl(plat, uHandle),
             wa: wa || "-",
             gmv: gmvVal,
             address: addrVal,
-            sowTimeline: sowVal,
             makeVt: vtVal,
-            boostCode180: boostVal,
-            niche: "Beauty",
             status: "Pending",
             approvedBy: ""
           };
@@ -660,8 +705,10 @@
       }
     });
 
-    document.getElementById("search-lead").addEventListener("input", render);
-    document.getElementById("filter-lead-status").addEventListener("change", render);
+    ["search-lead", "filter-lead-platform", "filter-lead-niche", "filter-lead-status"].forEach(id => {
+      document.getElementById(id).addEventListener("input", render);
+      document.getElementById(id).addEventListener("change", render);
+    });
 
     load();
   </script>

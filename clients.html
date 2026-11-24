@@ -42,7 +42,7 @@
   <main class="lg:ml-64 flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 min-w-0 w-full">
     <header class="mb-6">
       <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Client Management</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Klik kartu Brand/Klien untuk melihat daftar campaign dan nama-nama KOL yang terlibat.</p>
+      <p class="text-xs text-slate-500 mt-0.5">Klik kartu Brand/Klien untuk melihat daftar campaign (KOL & Affiliate), kreator yang terlibat, dan status pembayaran klien (Belum / DP / Lunas).</p>
     </header>
     <div id="client-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
   </main>
@@ -80,6 +80,8 @@
       "Completed"
     ];
 
+    const CLIENT_PAY_OPTIONS = ["Belum", "DP", "Lunas"];
+
     let byBrandMap = {};
     let currentModalBrand = "";
 
@@ -93,6 +95,12 @@
       if (e.target.id === "modal-client-detail") closeModal();
     });
 
+    function getPayBadgeClass(pay = "Belum") {
+      if (pay === "Lunas") return "bg-emerald-100 text-emerald-700 border-emerald-200";
+      if (pay === "DP") return "bg-amber-100 text-amber-700 border-amber-200";
+      return "bg-slate-100 text-slate-600 border-slate-200";
+    }
+
     function openClientModal(brandName) {
       const data = byBrandMap[brandName];
       if (!data) return;
@@ -100,13 +108,15 @@
 
       document.getElementById("client-modal-title").textContent = `Brand / Klien: ${data.brand}`;
       document.getElementById("client-modal-subtitle").textContent =
-        `${data.campaigns.length} Campaign • ${data.totalKol} KOL Terlibat • Total Publish: ${formatRp(data.publish)}`;
+        `${data.campaigns.length} Campaign • ${data.totalKol} Kreator Terlibat • Total Publish: ${formatRp(data.publish)}`;
 
       const bodyEl = document.getElementById("client-modal-body");
       bodyEl.innerHTML = data.campaigns.map(c => {
+        const isAff = (c.type || "kol") === "affiliate";
         const kolHtml = c.kols.length
           ? c.kols.map(k => {
               const margin = Number(k.publishTotal || 0) - Number(k.nettTotal || 0);
+              const isBarter = isAff && (k.dealType === "barter" || (Number(k.publishTotal || 0) === 0 && Number(k.nettTotal || 0) === 0));
               return `
                 <div class="p-2.5 rounded-xl bg-rose-50/40 border border-rose-100/80 flex flex-wrap items-center justify-between gap-2">
                   <div>
@@ -114,34 +124,50 @@
                     <p class="text-[11px] text-slate-500">@${k.ig || k.tiktok || "-"} • Status: <span class="font-semibold text-rose-600">${k.status || "-"}</span></p>
                   </div>
                   <div class="text-right">
-                    <p class="font-bold text-slate-800">${formatRp(k.publishTotal)}</p>
-                    ${isOwner ? `<p class="text-[10px] font-semibold text-emerald-600">Margin: ${formatRp(margin)}</p>` : ""}
+                    ${isBarter
+                      ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Barter Sampel</span>`
+                      : `<p class="font-bold text-slate-800">${formatRp(k.publishTotal)}</p>
+                         ${isOwner ? `<p class="text-[10px] font-semibold text-emerald-600">Margin: ${formatRp(margin)}</p>` : ""}`}
                   </div>
                 </div>
               `;
             }).join("")
-          : `<p class="text-slate-400 italic py-2">Belum ada KOL di campaign ini.</p>`;
+          : `<p class="text-slate-400 italic py-2">Belum ada kreator di campaign ini.</p>`;
 
         const curSt = c.status || "Planning";
         const opts = CAMPAIGN_STATUS_OPTIONS.includes(curSt) ? CAMPAIGN_STATUS_OPTIONS : [curSt, ...CAMPAIGN_STATUS_OPTIONS];
         const selectOptsHtml = opts.map(st => `<option value="${st}" ${st === curSt ? "selected" : ""}>${st}</option>`).join("");
 
+        const curPay = c.clientPaymentStatus || "Belum";
+        const payOptsHtml = CLIENT_PAY_OPTIONS.map(p => `<option value="${p}" ${p === curPay ? "selected" : ""}>${p}</option>`).join("");
+
         return `
           <div class="p-4 rounded-2xl border border-rose-100 bg-white space-y-2.5">
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-50 pb-2.5">
               <div>
-                <p class="text-sm font-bold text-slate-800">${c.name}</p>
-                <p class="text-[11px] text-slate-400">Niche: ${c.niche || "-"} • PIC: ${c.pic || "-"}</p>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded ${isAff ? "bg-slate-900 text-pink-400" : "bg-rose-100 text-rose-700"}">${isAff ? "AFFILIATE" : "KOL"}</span>
+                  <p class="text-sm font-bold text-slate-800">${c.name}</p>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">Niche: ${c.niche || "-"} • PIC: ${c.pic || "-"}</p>
               </div>
-              <div class="flex items-center gap-1.5">
-                <label class="text-[10px] font-bold uppercase text-slate-400">Status:</label>
-                <select data-cmp-id="${c.id}" class="cli-cmp-status-select px-2.5 py-1 rounded-xl border border-rose-200 bg-rose-50/70 text-[11px] font-bold text-rose-700 outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer">
-                  ${selectOptsHtml}
-                </select>
+              <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-1">
+                  <label class="text-[10px] font-bold uppercase text-slate-400">Bayar Klien:</label>
+                  <select data-cmp-id="${c.id}" class="cli-pay-status-select px-2.5 py-1 rounded-xl border text-[11px] font-bold outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer ${getPayBadgeClass(curPay)}">
+                    ${payOptsHtml}
+                  </select>
+                </div>
+                <div class="flex items-center gap-1">
+                  <label class="text-[10px] font-bold uppercase text-slate-400">Status:</label>
+                  <select data-cmp-id="${c.id}" class="cli-cmp-status-select px-2.5 py-1 rounded-xl border border-rose-200 bg-rose-50/70 text-[11px] font-bold text-rose-700 outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer">
+                    ${selectOptsHtml}
+                  </select>
+                </div>
               </div>
             </div>
             <div class="space-y-1.5">
-              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Nama KOL (${c.kols.length})</p>
+              <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Daftar Kreator (${c.kols.length})</p>
               ${kolHtml}
             </div>
           </div>
@@ -161,6 +187,19 @@
         });
       });
 
+      bodyEl.querySelectorAll(".cli-pay-status-select").forEach(sel => {
+        sel.addEventListener("change", (e) => {
+          const cmpId = e.target.dataset.cmpId;
+          const newPay = e.target.value;
+          updateDemoItem("campaigns", cmpId, {
+            clientPaymentStatus: newPay,
+            updatedBy: user?.name || "Unknown",
+            updatedAt: new Date().toISOString()
+          });
+          showToast(`Pembayaran klien diubah ke "${newPay}"!`);
+        });
+      });
+
       modalEl.classList.remove("hidden");
       modalEl.classList.add("flex");
       if (window.lucide) window.lucide.createIcons();
@@ -171,10 +210,12 @@
       Object.values(cmps || {}).forEach(c => {
         const b = c.brand || c.client || "Umum";
         if (!byBrand[b]) {
-          byBrand[b] = { brand: b, count: 0, totalKol: 0, publish: 0, margin: 0, campaigns: [] };
+          byBrand[b] = { brand: b, count: 0, totalKol: 0, publish: 0, margin: 0, campaigns: [], payCounts: { Belum: 0, DP: 0, Lunas: 0 } };
         }
         const itemsList = Object.values(c.items || {});
+        const paySt = c.clientPaymentStatus || "Belum";
         byBrand[b].count++;
+        byBrand[b].payCounts[paySt] = (byBrand[b].payCounts[paySt] || 0) + 1;
         byBrand[b].campaigns.push({ ...c, kols: itemsList });
 
         itemsList.forEach(i => {
@@ -189,18 +230,26 @@
       const gridEl = document.getElementById("client-grid");
 
       gridEl.innerHTML = list.length
-        ? list.map(b => `
-            <div data-brand="${encodeURIComponent(b.brand)}" class="client-card cursor-pointer bg-white p-5 rounded-2xl border border-rose-100 hover:border-rose-300 hover:-translate-y-0.5 shadow-sm space-y-2 transition">
+        ? list.map(b => {
+            const badges = [];
+            if (b.payCounts.Lunas > 0) badges.push(`<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Lunas: ${b.payCounts.Lunas}</span>`);
+            if (b.payCounts.DP > 0) badges.push(`<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">DP: ${b.payCounts.DP}</span>`);
+            if (b.payCounts.Belum > 0) badges.push(`<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">Belum: ${b.payCounts.Belum}</span>`);
+
+            return `
+            <div data-brand="${encodeURIComponent(b.brand)}" class="client-card cursor-pointer bg-white p-5 rounded-2xl border border-rose-100 hover:border-rose-300 hover:-translate-y-0.5 shadow-sm space-y-2.5 transition">
               <div class="flex items-center justify-between gap-2">
                 <h3 class="text-base font-bold text-slate-800">${b.brand}</h3>
-                <span class="text-[11px] font-semibold text-rose-500">Lihat KOL &rarr;</span>
+                <span class="text-[11px] font-semibold text-rose-500">Detail &rarr;</span>
               </div>
-              <p class="text-xs text-slate-500">${b.count} Campaign • ${b.totalKol} KOL Terlibat</p>
+              <p class="text-xs text-slate-500">${b.count} Campaign • ${b.totalKol} Kreator Terlibat</p>
+              <div class="flex flex-wrap gap-1.5">${badges.join("")}</div>
               <div class="pt-2 border-t border-rose-50 text-xs">
                 <p class="text-slate-500">Total Publish Value: <strong class="text-rose-600">${formatRp(b.publish)}</strong></p>
                 ${isOwner ? `<p class="text-emerald-600 font-bold mt-0.5">Estimasi Margin (Owner): ${formatRp(b.margin)}</p>` : ""}
               </div>
-            </div>`).join("")
+            </div>`;
+          }).join("")
         : `<p class="text-sm text-slate-400">Belum ada data klien.</p>`;
 
       gridEl.querySelectorAll(".client-card").forEach(card => {

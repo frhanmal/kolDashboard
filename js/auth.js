@@ -23,9 +23,9 @@ export const NICHE_MAP = {
 
 const MENU_ITEMS = [
   { id: "dashboard", label: "Overview", href: "dashboard.html", icon: "layout-dashboard", roles: ["owner", "kol_specialist", "finance"] },
-  { id: "leads", label: "Lead Masuk", href: "leads.html", icon: "inbox", roles: ["owner", "kol_specialist"] },
-  { id: "master-kol", label: "Talent Database", href: "master-kol.html", icon: "users", roles: ["owner", "kol_specialist", "finance"] },
-  { id: "affiliate", label: "Listing Affiliate", href: "affiliate.html", icon: "shopping-bag", roles: ["owner", "kol_specialist"] },
+  { id: "leads", label: "Lead Masuk (KOL)", href: "leads.html", icon: "inbox", roles: ["owner", "kol_specialist"] },
+  { id: "master-kol", label: "Database KOL", href: "master-kol.html", icon: "users", roles: ["owner", "kol_specialist", "finance"] },
+  { id: "affiliate", label: "Database Affiliate", href: "affiliate.html", icon: "shopping-bag", roles: ["owner", "kol_specialist", "finance"] },
   { id: "campaign", label: "Campaigns", href: "campaign.html", icon: "megaphone", roles: ["owner", "kol_specialist"] },
   { id: "clients", label: "Client Management", href: "clients.html", icon: "building-2", roles: ["owner", "kol_specialist"] },
   { id: "finance", label: "Finance & Tagihan", href: "finance.html", icon: "wallet", roles: ["owner", "finance"] },
@@ -38,14 +38,14 @@ const DEMO_SEED = {
     "LD-100001": {
       id: "LD-100001",
       name: "Chicilia Greace",
+      platform: "Tiktok",
+      username: "cgksis",
       tiktok: "cgksis",
       tiktokLink: "https://www.tiktok.com/@cgksis",
       wa: "082398894015",
       gmv: "6.300.000",
       address: "Jl. Melati No. 12, Kemang, Jakarta Selatan",
-      sowTimeline: "Ya",
       makeVt: "Ya",
-      boostCode180: "Ya",
       niche: "Beauty",
       status: "Pending",
       approvedBy: ""
@@ -53,14 +53,14 @@ const DEMO_SEED = {
     "LD-100002": {
       id: "LD-100002",
       name: "Nadia Putri Larasati",
+      platform: "Shopee",
+      username: "nadiaputri.daily",
       tiktok: "nadiaputri.daily",
-      tiktokLink: "https://www.tiktok.com/@nadiaputri.daily",
+      tiktokLink: "https://shopee.co.id/nadiaputri.daily",
       wa: "081288990011",
       gmv: "2.450.000",
       address: "Jl. Dago Asri No. 45, Bandung",
-      sowTimeline: "Ya",
       makeVt: "Ya",
-      boostCode180: "Tidak",
       niche: "Fashion",
       status: "Pending",
       approvedBy: ""
@@ -68,14 +68,14 @@ const DEMO_SEED = {
     "LD-100003": {
       id: "LD-100003",
       name: "Alya Rahmadhani",
+      platform: "Tiktok",
+      username: "alyarahma_",
       tiktok: "alyarahma_",
       tiktokLink: "https://www.tiktok.com/@alyarahma_",
       wa: "085712349876",
       gmv: "12.800.000",
       address: "Cluster Harmoni Blok B4, Tangerang Selatan",
-      sowTimeline: "Ya",
       makeVt: "Ya",
-      boostCode180: "Ya",
       niche: "Beauty",
       status: "Approved",
       approvedKolId: "KOL-100001",
@@ -139,10 +139,12 @@ const DEMO_SEED = {
   campaigns: {
     "CMP-1001": {
       id: "CMP-1001",
+      type: "kol",
       name: "Glow Serum Launch Q4",
       brand: "GlowSkin Indonesia",
       niche: "Beauty",
-      status: "4 - Approved, Campaign Onprocess",
+      status: "Active",
+      clientPaymentStatus: "DP",
       items: {
         "KOL-100001": {
           kolId: "KOL-100001",
@@ -150,11 +152,37 @@ const DEMO_SEED = {
           ig: "alyarahma.id",
           tiktok: "alyarahma_",
           wa: "6285712349876",
-          sowList: ["1x TikTok Video", "Add-on Boost/Ads Code"],
+          sow: ["tiktok", "boost"],
           publishTotal: 4875000,
           nettTotal: 3750000,
+          dealType: "paid",
           status: "7 - Butuh Payment",
           paymentStatus: "Unpaid"
+        }
+      }
+    },
+    "CMP-1002": {
+      id: "CMP-1002",
+      type: "affiliate",
+      name: "GlowSkin Affiliate Shopee & TikTok Batch 1",
+      brand: "GlowSkin Indonesia",
+      niche: "Beauty",
+      status: "Active",
+      clientPaymentStatus: "Belum",
+      items: {
+        "AFF-100001": {
+          kolId: "AFF-100001",
+          kolName: "Deviallutfy",
+          platform: "Tiktok",
+          tiktok: "deviallutfy",
+          wa: "085959597441",
+          sow: ["Vidio"],
+          publishTotal: 0,
+          nettTotal: 0,
+          dealType: "barter",
+          status: "4 - Posting",
+          postLink: "https://vt.tiktok.com/ZSQJCU1/",
+          paymentStatus: "Barter"
         }
       }
     }
@@ -167,11 +195,9 @@ const DEMO_SEED = {
       niche: "Beauty",
       subNiche: "Skincare",
       accountLink: "https://www.tiktok.com/@deviallutfy",
-      package: "Tiktok Video",
+      package: "Vidio",
       gmv: 6600000,
       contact: "085959597441",
-      postLinks: ["https://vt.tiktok.com/ZSQJCU1/"],
-      approval: "Posting Video",
       notes: "Barter sampel serum, fast response",
       updatedBy: "Staff KOL Specialist",
       updatedAt: new Date().toISOString()
@@ -179,15 +205,13 @@ const DEMO_SEED = {
     "AFF-100002": {
       id: "AFF-100002",
       username: "Syifa Nafi'ah",
-      platform: "Tiktok",
+      platform: "Shopee",
       niche: "Beauty",
       subNiche: "Makeup",
-      accountLink: "https://www.tiktok.com/@syifanafiah",
-      package: "Tiktok Video",
+      accountLink: "https://shopee.co.id/syifanafiah",
+      package: "Livestreaming",
       gmv: 21000000,
       contact: "087817971329",
-      postLinks: ["https://vt.tiktok.com/ZSxl22/"],
-      approval: "Posting Video",
       notes: "GMV tinggi di kategori lip tint",
       updatedBy: "Staff KOL Specialist",
       updatedAt: new Date().toISOString()
@@ -199,12 +223,10 @@ const DEMO_SEED = {
       niche: "Beauty",
       subNiche: "Skincare",
       accountLink: "https://www.tiktok.com/@nabilasamuri",
-      package: "Tiktok Video",
+      package: "Vidio",
       gmv: 65400000,
       contact: "08563645405",
-      postLinks: [],
-      approval: "Pengajuan Sampel",
-      notes: "Menunggu konfirmasi alamat pengiriman sampel",
+      notes: "Siap kirim sampel produk",
       updatedBy: "Staff KOL Specialist",
       updatedAt: new Date().toISOString()
     }

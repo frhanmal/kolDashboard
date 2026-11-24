@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Listing Affiliate - KOL Management</title>
+  <title>Database Affiliate - KOL Management</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f43f5e'/%3E%3Cstop offset='100%25' stop-color='%23f472b6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='800' font-size='34' fill='white'%3EK%3C/text%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -56,15 +56,15 @@
   <main class="lg:ml-64 flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 min-w-0 w-full">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Listing Affiliate</h1>
-        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kelola afiliator barter sampel / GMV, sub-package konten per platform, dan multi-link video posting.</p>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Database Affiliate (TikTok & Shopee)</h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Master database kreator Affiliate. Untuk menjalankan campaign affiliate & tracking pengiriman sampel/posting, pilih dari menu <strong>Campaigns</strong>.</p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <button type="button" id="btn-download-aff-tpl" class="inline-flex items-center gap-1.5 bg-white hover:bg-rose-50 text-slate-700 border border-rose-200 text-xs font-semibold px-3 py-2.5 rounded-xl transition">
           <i data-lucide="download" class="w-3.5 h-3.5 text-rose-500"></i>
           <span>Template Excel</span>
         </button>
-        <label class="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold px-3 py-2.5 rounded-xl cursor-pointer transition">
+        <label id="lbl-import-aff" class="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold px-3 py-2.5 rounded-xl cursor-pointer transition">
           <i data-lucide="upload" class="w-3.5 h-3.5"></i>
           <span>Import Excel/CSV</span>
           <input type="file" id="import-aff-file" accept=".xlsx,.xls,.csv" class="hidden" />
@@ -82,19 +82,19 @@
 
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
       <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-xs">
-        <p class="text-[11px] font-semibold text-slate-400 uppercase">Total Affiliate</p>
+        <p class="text-[11px] font-semibold text-slate-400 uppercase">Total Database Affiliate</p>
         <p id="stat-aff-total" class="text-xl font-extrabold text-slate-800 mt-1">0</p>
       </div>
       <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-xs">
-        <p class="text-[11px] font-semibold text-emerald-600 uppercase">Pengajuan / Kirim Sampel</p>
-        <p id="stat-aff-sample" class="text-xl font-extrabold text-emerald-600 mt-1">0</p>
+        <p class="text-[11px] font-semibold text-slate-800 uppercase">Platform TikTok</p>
+        <p id="stat-aff-tiktok" class="text-xl font-extrabold text-slate-800 mt-1">0</p>
       </div>
       <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-xs">
-        <p class="text-[11px] font-semibold text-rose-500 uppercase">Sudah Posting Video</p>
-        <p id="stat-aff-posted" class="text-xl font-extrabold text-rose-600 mt-1">0</p>
+        <p class="text-[11px] font-semibold text-orange-600 uppercase">Platform Shopee</p>
+        <p id="stat-aff-shopee" class="text-xl font-extrabold text-orange-600 mt-1">0</p>
       </div>
       <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-xs">
-        <p class="text-[11px] font-semibold text-amber-600 uppercase">Akumulasi GMV TT</p>
+        <p class="text-[11px] font-semibold text-amber-600 uppercase">Akumulasi GMV</p>
         <p id="stat-aff-gmv" class="text-lg sm:text-xl font-extrabold text-slate-800 mt-1">Rp 0</p>
       </div>
     </div>
@@ -109,44 +109,18 @@
 
         <select id="filter-aff-platform" class="px-3 py-2 rounded-xl border border-rose-200/70 bg-white text-xs text-slate-600 outline-none focus:ring-2 focus:ring-rose-400">
           <option value="">Semua Platform</option>
-          <option value="Instagram">Instagram</option>
           <option value="Tiktok">Tiktok</option>
-          <option value="Youtube">Youtube</option>
-        </select>
-
-        <select id="filter-aff-package" class="px-3 py-2 rounded-xl border border-rose-200/70 bg-white text-xs text-slate-600 outline-none focus:ring-2 focus:ring-rose-400">
-          <option value="">Semua Package</option>
-          <optgroup label="Instagram">
-            <option value="IG Story">IG Story</option>
-            <option value="IG Feeds">IG Feeds</option>
-            <option value="IG Carousel">IG Carousel</option>
-            <option value="IG Reels">IG Reels</option>
-          </optgroup>
-          <optgroup label="Tiktok">
-            <option value="Tiktok Video">Tiktok Video</option>
-            <option value="Tiktok Story">Tiktok Story</option>
-            <option value="Tiktok Photos">Tiktok Photos</option>
-          </optgroup>
-          <optgroup label="Youtube">
-            <option value="YT Shorts">YT Shorts</option>
-            <option value="YT Video">YT Video</option>
-          </optgroup>
-          <optgroup label="Add-on / Lainnya">
-            <option value="+ Cart">+ Cart</option>
-          </optgroup>
+          <option value="Shopee">Shopee</option>
         </select>
 
         <select id="filter-aff-niche" class="px-3 py-2 rounded-xl border border-rose-200/70 bg-white text-xs text-slate-600 outline-none focus:ring-2 focus:ring-rose-400">
           <option value="">Semua Niche</option>
         </select>
 
-        <select id="filter-aff-approval" class="px-3 py-2 rounded-xl border border-rose-200/70 bg-white text-xs text-slate-600 outline-none focus:ring-2 focus:ring-rose-400">
-          <option value="">Semua Status Approval</option>
-          <option value="Pengajuan Sampel">Pengajuan Sampel</option>
-          <option value="Kirim Sampel">Kirim Sampel</option>
-          <option value="Posting Video">Posting Video</option>
-          <option value="Selesai">Selesai</option>
-          <option value="Ditolak">Ditolak</option>
+        <select id="filter-aff-package" class="px-3 py-2 rounded-xl border border-rose-200/70 bg-white text-xs text-slate-600 outline-none focus:ring-2 focus:ring-rose-400">
+          <option value="">Semua Package</option>
+          <option value="Vidio">Vidio</option>
+          <option value="Livestreaming">Livestreaming</option>
         </select>
       </div>
     </div>
@@ -161,11 +135,10 @@
               <th class="py-3 px-3">Niche</th>
               <th class="py-3 px-3">Link Akun</th>
               <th class="py-3 px-3">Package</th>
-              <th class="py-3 px-3 text-right">GMV TT</th>
+              <th class="py-3 px-3 text-right">GMV</th>
               <th class="py-3 px-3">Kontak</th>
-              <th class="py-3 px-3">Link Posting</th>
-              <th class="py-3 px-3 text-center">Approval</th>
-              <th class="py-3 px-3 text-right">Aksi</th>
+              <th class="py-3 px-3">Catatan</th>
+              <th class="py-3 px-3 text-right action-col">Aksi</th>
             </tr>
           </thead>
           <tbody id="aff-table-body" class="divide-y divide-rose-50 text-xs"></tbody>
@@ -178,8 +151,8 @@
     <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-rose-100">
       <div class="p-5 sm:p-6 border-b border-rose-100 flex items-center justify-between sticky top-0 bg-white z-10">
         <div>
-          <h2 id="aff-modal-title" class="text-base sm:text-lg font-bold text-slate-800">Tambah Listing Affiliate</h2>
-          <p class="text-xs text-slate-500">Sesuai template Listing Affiliate (Instagram, TikTok & YouTube).</p>
+          <h2 id="aff-modal-title" class="text-base sm:text-lg font-bold text-slate-800">Tambah Database Affiliate</h2>
+          <p class="text-xs text-slate-500">Simpan profil master kreator Affiliate (TikTok / Shopee).</p>
         </div>
         <button type="button" id="btn-close-aff-modal" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -198,9 +171,8 @@
           <div>
             <label class="block font-semibold text-slate-600 mb-1">Platform *</label>
             <select id="a-platform" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm bg-white focus:ring-2 focus:ring-rose-400 outline-none">
-              <option value="Instagram">Instagram</option>
-              <option value="Tiktok" selected>Tiktok</option>
-              <option value="Youtube">Youtube</option>
+              <option value="Tiktok">Tiktok</option>
+              <option value="Shopee">Shopee</option>
             </select>
           </div>
           <div>
@@ -212,16 +184,19 @@
             <select id="a-subniche" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm bg-white focus:ring-2 focus:ring-rose-400 outline-none"></select>
           </div>
           <div>
-            <label id="a-link-label" class="block font-semibold text-slate-600 mb-1">Link Tiktok</label>
+            <label class="block font-semibold text-slate-600 mb-1">Link Tiktok / Shopee</label>
             <input type="url" id="a-link" placeholder="https://www.tiktok.com/@username"
               class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 outline-none" />
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Package (Sub-Platform) *</label>
-            <select id="a-package" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm bg-white focus:ring-2 focus:ring-rose-400 outline-none"></select>
+            <label class="block font-semibold text-slate-600 mb-1">Package</label>
+            <select id="a-package" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm bg-white focus:ring-2 focus:ring-rose-400 outline-none">
+              <option value="Vidio">Vidio</option>
+              <option value="Livestreaming">Livestreaming</option>
+            </select>
           </div>
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">GMV TT (Rp)</label>
+            <label class="block font-semibold text-slate-600 mb-1">GMV (Rp)</label>
             <input type="text" id="a-gmv" placeholder="Contoh: 6.600.000"
               class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm font-semibold focus:ring-2 focus:ring-rose-400 outline-none" />
           </div>
@@ -232,28 +207,10 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block font-semibold text-slate-600 mb-1">Status Approval</label>
-            <select id="a-approval" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm font-semibold bg-white focus:ring-2 focus:ring-rose-400 outline-none">
-              <option value="Pengajuan Sampel">Pengajuan Sampel</option>
-              <option value="Kirim Sampel">Kirim Sampel</option>
-              <option value="Posting Video">Posting Video</option>
-              <option value="Selesai">Selesai</option>
-              <option value="Ditolak">Ditolak</option>
-            </select>
-          </div>
-          <div>
-            <label class="block font-semibold text-slate-600 mb-1">Catatan / Alamat Sampel</label>
-            <input type="text" id="a-notes" placeholder="Catatan singkat atau info pengiriman sampel..."
-              class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 outline-none" />
-          </div>
-        </div>
-
         <div>
-          <label class="block font-semibold text-slate-600 mb-1">Link Posting Video (Pisahkan per baris jika lebih dari 1 link)</label>
-          <textarea id="a-post-links" rows="3" placeholder="https://vt.tiktok.com/ZSQJCU1/&#10;https://vt.tiktok.com/ZSQDthq/"
-            class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-xs focus:ring-2 focus:ring-rose-400 outline-none"></textarea>
+          <label class="block font-semibold text-slate-600 mb-1">Catatan / Alamat Pengiriman Sampel</label>
+          <input type="text" id="a-notes" placeholder="Catatan singkat atau alamat pengiriman sampel..."
+            class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 outline-none" />
         </div>
 
         <div class="flex justify-end gap-3 pt-2">

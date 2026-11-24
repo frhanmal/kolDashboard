@@ -13,7 +13,7 @@ if (isOwner) {
   document.getElementById("es-preview-nett-box")?.classList.remove("hidden");
 }
 
-const SOP_STATUSES = [
+const KOL_SOP_STATUSES = [
   "1 - Sudah di Reach Out",
   "2 - Client Approved, Proses Negotiate",
   "3 - KOL Approved, Agreement",
@@ -27,23 +27,29 @@ const SOP_STATUSES = [
   "11 - Ghosting"
 ];
 
+const AFFILIATE_SOP_STATUSES = [
+  "1 - Sudah di Reach Out",
+  "2 - Pengajuan Sampel",
+  "3 - Kirim Sampel",
+  "4 - Posting",
+  "5 - Butuh Payment (Paid Affiliate)",
+  "6 - Selesai",
+  "7 - Ditolak / Batal"
+];
+
 const SOW_LABELS = {
   story: "IG Story",
   reels: "IG Reels",
   tiktok: "TikTok Video",
   kuning: "Keranjang Kuning",
   boost: "Boost Code",
-  visit: "Visit"
+  visit: "Visit",
+  Vidio: "Vidio",
+  Livestreaming: "Livestreaming"
 };
 
 const filterStatusEl = document.getElementById("filter-status");
 const searchKolEl = document.getElementById("search-campaign-kol");
-SOP_STATUSES.forEach(st => {
-  const opt = document.createElement("option");
-  opt.value = st;
-  opt.textContent = st;
-  filterStatusEl.appendChild(opt);
-});
 
 const cmpSearchInput = document.getElementById("campaign-search-input");
 const cmpDropdown = document.getElementById("campaign-search-dropdown");
@@ -53,6 +59,11 @@ const sKolSearchInput = document.getElementById("s-kol-search");
 const sKolDropdown = document.getElementById("s-kol-dropdown");
 const sKolIdInput = document.getElementById("s-kol-id");
 const btnClearSKol = document.getElementById("btn-clear-s-kol");
+
+const saAffSearchInput = document.getElementById("sa-aff-search");
+const saAffDropdown = document.getElementById("sa-aff-dropdown");
+const saAffIdInput = document.getElementById("sa-aff-id");
+const btnClearSaAff = document.getElementById("btn-clear-sa-aff");
 
 const summaryGridEl = document.getElementById("sum-kol")?.closest(".grid");
 const filterBarEl = searchKolEl?.closest(".flex.flex-wrap.items-center.justify-between");
@@ -68,13 +79,14 @@ if (!emptyPlaceholderEl && tableCardEl) {
       <i data-lucide="mouse-pointer-click" class="w-6 h-6"></i>
     </div>
     <h3 class="text-sm font-bold text-slate-800">Belum Ada Campaign Dipilih</h3>
-    <p class="text-xs text-slate-500 max-w-md mx-auto">Klik kotak <strong>Pilih Campaign</strong> di atas lalu pilih atau ketik nama campaign untuk menampilkan ringkasan dan tabel tracking KOL.</p>
+    <p class="text-xs text-slate-500 max-w-md mx-auto">Klik kotak <strong>Pilih Campaign</strong> di atas untuk membuka campaign KOL atau Affiliate, atau klik <strong>+ Campaign KOL</strong> / <strong>+ Campaign Affiliate</strong> untuk membuat baru.</p>
   `;
   tableCardEl.parentNode.insertBefore(emptyPlaceholderEl, tableCardEl);
   if (window.lucide) window.lucide.createIcons();
 }
 
 let masterKols = [];
+let masterAffiliates = [];
 let campaigns = {};
 let activeCampaignId = "";
 
@@ -86,9 +98,24 @@ function calcPublish(nett, markup) {
   return Math.round(Number(nett || 0) * (1 + Number(markup || 0) / 100));
 }
 
+function getSopListForCampaign(cmp) {
+  return (cmp?.type || "kol") === "affiliate" ? AFFILIATE_SOP_STATUSES : KOL_SOP_STATUSES;
+}
+
+function syncFilterStatusDropdown(cmp) {
+  const currentVal = filterStatusEl.value;
+  const list = getSopListForCampaign(cmp);
+  filterStatusEl.innerHTML = `<option value="">Semua Status SOP</option>` +
+    list.map(st => `<option value="${st}" ${st === currentVal ? "selected" : ""}>${st}</option>`).join("");
+}
+
 function initData() {
   subscribeDemoCollection("master_kol", (data) => {
     masterKols = Object.values(data || {});
+  });
+
+  subscribeDemoCollection("affiliates", (data) => {
+    masterAffiliates = Object.values(data || {});
   });
 
   subscribeDemoCollection("campaigns", (data) => {
@@ -119,16 +146,28 @@ function getCampaignStatusBadgeClass(status = "") {
   return "bg-rose-50 text-rose-700 border-rose-200";
 }
 
+function getClientPayBadgeClass(pay = "Belum") {
+  if (pay === "Lunas") return "bg-emerald-100 text-emerald-700 border-emerald-200";
+  if (pay === "DP") return "bg-amber-100 text-amber-700 border-amber-200";
+  return "bg-slate-100 text-slate-600 border-slate-200";
+}
+
 function populateCampaignSelector() {
   const list = Object.values(campaigns);
   const statusWrap = document.getElementById("campaign-status-wrap");
   const statusSelect = document.getElementById("active-campaign-status");
+  const payWrap = document.getElementById("campaign-client-pay-wrap");
+  const paySelect = document.getElementById("active-client-pay-status");
+  const typeBadge = document.getElementById("active-campaign-type-badge");
   const editCmpBtn = document.getElementById("btn-edit-campaign");
+  const shortlistLabel = document.getElementById("btn-add-shortlist-label");
 
   if (list.length === 0) {
     activeCampaignId = "";
     if (cmpSearchInput) cmpSearchInput.value = "";
     statusWrap?.classList.add("hidden");
+    payWrap?.classList.add("hidden");
+    typeBadge?.classList.add("hidden");
     editCmpBtn?.classList.add("hidden");
     document.getElementById("campaign-meta").textContent = "Belum ada campaign tersimpan.";
     return;
@@ -147,17 +186,44 @@ function populateCampaignSelector() {
   }
 
   if (active) {
+    const isAff = (active.type || "kol") === "affiliate";
+    syncFilterStatusDropdown(active);
+
+    if (typeBadge) {
+      typeBadge.classList.remove("hidden");
+      typeBadge.textContent = isAff ? "AFFILIATE" : "KOL";
+      typeBadge.className = isAff
+        ? "px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-slate-900 text-pink-400"
+        : "px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide bg-rose-100 text-rose-700";
+    }
+
+    if (shortlistLabel) {
+      shortlistLabel.textContent = isAff ? "+ Shortlist Affiliate" : "+ Shortlist KOL";
+    }
+
     statusWrap?.classList.remove("hidden");
+    payWrap?.classList.remove("hidden");
     editCmpBtn?.classList.remove("hidden");
+
     const st = active.status || "Planning";
     syncSelectOption(statusSelect, st);
     if (statusSelect) {
       statusSelect.className = `px-2.5 py-1.5 rounded-xl border text-xs font-bold focus:bg-white focus:ring-2 focus:ring-rose-400 outline-none cursor-pointer transition ${getCampaignStatusBadgeClass(st)}`;
     }
+
+    const paySt = active.clientPaymentStatus || "Belum";
+    if (paySelect) {
+      paySelect.value = paySt;
+      paySelect.className = `px-2.5 py-1.5 rounded-xl border text-xs font-bold focus:bg-white focus:ring-2 focus:ring-rose-400 outline-none cursor-pointer transition ${getClientPayBadgeClass(paySt)}`;
+    }
+
     document.getElementById("campaign-meta").textContent = `Niche: ${active.niche || "-"} • PIC: ${active.pic || "-"}`;
   } else {
     statusWrap?.classList.add("hidden");
+    payWrap?.classList.add("hidden");
+    typeBadge?.classList.add("hidden");
     editCmpBtn?.classList.add("hidden");
+    if (shortlistLabel) shortlistLabel.textContent = "+ Shortlist";
     document.getElementById("campaign-meta").textContent = `${list.length} campaign tersedia — pilih untuk melihat data`;
   }
 }
@@ -173,6 +239,17 @@ document.getElementById("active-campaign-status")?.addEventListener("change", (e
   showToast(`Status campaign diubah ke "${newStatus}"!`);
 });
 
+document.getElementById("active-client-pay-status")?.addEventListener("change", (e) => {
+  if (!activeCampaignId || !campaigns[activeCampaignId]) return;
+  const newPay = e.target.value;
+  updateDemoItem("campaigns", activeCampaignId, {
+    clientPaymentStatus: newPay,
+    updatedBy: user?.name || "Unknown",
+    updatedAt: new Date().toISOString()
+  });
+  showToast(`Status pembayaran klien: "${newPay}"!`);
+});
+
 function renderCampaignDropdown(query = "") {
   if (!cmpDropdown) return;
   const q = query.trim().toLowerCase();
@@ -180,8 +257,10 @@ function renderCampaignDropdown(query = "") {
   const matches = list.filter(c => {
     if (!q) return true;
     const brandName = c.brand || c.client || "";
+    const typeStr = (c.type || "kol") === "affiliate" ? "affiliate" : "kol";
     return (c.name || "").toLowerCase().includes(q) ||
       brandName.toLowerCase().includes(q) ||
+      typeStr.includes(q) ||
       (c.niche || "").toLowerCase().includes(q) ||
       (c.status || "").toLowerCase().includes(q) ||
       (c.id || "").toLowerCase().includes(q);
@@ -194,17 +273,19 @@ function renderCampaignDropdown(query = "") {
       const isSelected = c.id === activeCampaignId;
       const brandName = c.brand || c.client || "-";
       const st = c.status || "Planning";
+      const isAff = (c.type || "kol") === "affiliate";
+      const paySt = c.clientPaymentStatus || "Belum";
       return `
         <button type="button" data-id="${c.id}" class="opt-cmp w-full text-left px-3.5 py-2.5 hover:bg-rose-50 flex items-center justify-between gap-2 transition ${isSelected ? "bg-rose-50/70" : ""}">
           <div class="min-w-0">
-            <div class="font-bold text-slate-800 truncate">${c.name}</div>
-            <div class="text-[11px] text-slate-400 truncate">Brand: ${brandName} • Niche: ${c.niche || "-"}</div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-[9px] font-extrabold px-1.5 py-0.5 rounded ${isAff ? "bg-slate-900 text-pink-400" : "bg-rose-100 text-rose-700"}">${isAff ? "AFFILIATE" : "KOL"}</span>
+              <span class="font-bold text-slate-800 truncate">${c.name}</span>
+            </div>
+            <div class="text-[11px] text-slate-400 truncate mt-0.5">Brand: ${brandName} • Klien: <strong>${paySt}</strong></div>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
-            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getCampaignStatusBadgeClass(st)} max-w-[130px] truncate">${st}</span>
-            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${isSelected ? "bg-rose-500 text-white" : "bg-rose-50 text-rose-600"}">
-              ${isSelected ? "Aktif" : "Pilih"}
-            </span>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getCampaignStatusBadgeClass(st)} max-w-[120px] truncate">${st}</span>
           </div>
         </button>
       `;
@@ -251,9 +332,17 @@ function renderTrackingTable() {
     return;
   }
 
+  const isAffCmp = (active.type || "kol") === "affiliate";
+  const sopList = getSopListForCampaign(active);
   const allItems = Object.values(active.items || {});
   const filterSt = filterStatusEl.value;
   const searchQ = (searchKolEl?.value || "").trim().toLowerCase();
+
+  document.getElementById("sum-kol-label").textContent = isAffCmp ? "Total Affiliate Shortlist" : "Total KOL Shortlist";
+  document.getElementById("sum-posted-label").textContent = isAffCmp ? "Sudah Posting (4 - Posting+)" : "Sudah Post (Status 6+)";
+  document.getElementById("campaign-tip-text").innerHTML = isAffCmp
+    ? 'Tip: Affiliate gratis/barter sampel cukup pilih skema <strong>Barter Sampel</strong>; jika berbayar ubah status ke <strong class="text-amber-600">5 - Butuh Payment</strong> agar masuk menu Finance.'
+    : 'Tip: Ubah status ke <strong class="text-amber-600">7 - Butuh Payment</strong> agar otomatis masuk ke menu Finance.';
 
   const items = allItems.filter(i => {
     const matchStatus = !filterSt || i.status === filterSt;
@@ -268,7 +357,14 @@ function renderTrackingTable() {
     return matchStatus && matchSearch;
   });
 
-  const postedCount = allItems.filter(i => (i.status || "").startsWith("6 -") || (i.status || "").startsWith("7 -") || (i.status || "").startsWith("8 -")).length;
+  const postedCount = allItems.filter(i => {
+    const st = i.status || "";
+    if (isAffCmp) {
+      return st.startsWith("4 -") || st.startsWith("5 -") || st.startsWith("6 -");
+    }
+    return st.startsWith("6 -") || st.startsWith("7 -") || st.startsWith("8 -");
+  }).length;
+
   const totalPublish = allItems.reduce((acc, i) => acc + Number(i.publishTotal || 0), 0);
   const totalNett = allItems.reduce((acc, i) => acc + Number(i.nettTotal || 0), 0);
 
@@ -278,14 +374,19 @@ function renderTrackingTable() {
   document.getElementById("sum-margin").textContent = formatRp(totalPublish - totalNett);
 
   if (items.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="py-10 text-center text-slate-400">${allItems.length === 0 ? 'Belum ada KOL di shortlist campaign ini. Klik "+ Shortlist KOL".' : 'Tidak ada kreator yang cocok dengan pencarian/filter.'}</td></tr>`;
+    const emptyMsg = allItems.length === 0
+      ? (isAffCmp
+        ? 'Belum ada Affiliate di shortlist campaign ini. Klik "+ Shortlist Affiliate".'
+        : 'Belum ada KOL di shortlist campaign ini. Klik "+ Shortlist KOL".')
+      : 'Tidak ada kreator yang cocok dengan pencarian/filter.';
+    tbody.innerHTML = `<tr><td colspan="7" class="py-10 text-center text-slate-400">${emptyMsg}</td></tr>`;
     return;
   }
 
   tbody.innerHTML = items.map(item => {
-    const st = item.status || "1 - Sudah di Reach Out";
-    const isOvertime = st.startsWith("5 -");
-    const isPayment = st.startsWith("7 -");
+    const st = item.status || sopList[0];
+    const isOvertime = !isAffCmp && st.startsWith("5 -");
+    const isPayment = (!isAffCmp && st.startsWith("7 -")) || (isAffCmp && st.startsWith("5 -"));
     const rowBg = isOvertime ? "bg-red-50/50" : (isPayment ? "bg-amber-50/40" : "hover:bg-rose-50/30");
 
     const sowArr = item.sow || [];
@@ -293,31 +394,42 @@ function renderTrackingTable() {
       ? sowArr.map(s => `<span class="inline-block w-fit bg-rose-50 text-rose-600 text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap">${SOW_LABELS[s] || s}</span>`).join("")
       : (item.sowList || []).map(lbl => `<span class="inline-block w-fit bg-rose-50 text-rose-600 text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap">${lbl}</span>`).join("");
 
+    const isBarter = isAffCmp && (item.dealType === "barter" || (Number(item.publishTotal || 0) === 0 && Number(item.nettTotal || 0) === 0));
     const margin = Number(item.publishTotal || 0) - Number(item.nettTotal || 0);
 
-    const statusOptions = SOP_STATUSES.map(optSt =>
+    const statusOptions = sopList.map(optSt =>
       `<option value="${optSt}" ${st === optSt ? "selected" : ""}>${optSt}</option>`
     ).join("");
+
+    const platBadge = item.platform
+      ? `<span class="ml-1 text-[9px] font-bold px-1.5 py-0.5 rounded ${item.platform.toLowerCase() === "shopee" ? "bg-orange-100 text-orange-700" : "bg-slate-800 text-white"}">${item.platform}</span>`
+      : "";
 
     return `
       <tr class="${rowBg} transition align-middle">
         <td class="py-3 px-2.5">
-          <div class="font-bold text-slate-800 text-xs">${item.kolName}</div>
-          <div class="text-[10px] text-slate-400 truncate max-w-[155px]">@${item.ig || item.tiktok || "-"} • ${item.wa || "-"}</div>
-          ${item.updatedBy ? `<div class="text-[10px] text-slate-400 truncate max-w-[155px]">By: ${item.updatedBy}</div>` : ""}
+          <div class="font-bold text-slate-800 text-xs">${item.kolName}${platBadge}</div>
+          <div class="text-[10px] text-slate-400 truncate max-w-[165px]">@${item.ig || item.tiktok || "-"} • ${item.wa || "-"}</div>
+          ${item.updatedBy ? `<div class="text-[10px] text-slate-400 truncate max-w-[165px]">By: ${item.updatedBy}</div>` : ""}
         </td>
         <td class="py-3 px-2.5">
           <div class="flex flex-col gap-1">${sowBadges || `<span class="text-slate-400 text-[10px]">-</span>`}</div>
         </td>
-        <td class="py-3 px-2.5 text-xs font-bold text-slate-800 whitespace-nowrap">${formatRp(item.publishTotal)}</td>
+        <td class="py-3 px-2.5 text-xs font-bold text-slate-800 whitespace-nowrap">
+          ${isBarter
+            ? `<span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">Barter Sampel (Gratis)</span>`
+            : formatRp(item.publishTotal)}
+        </td>
         ${isOwner ? `
           <td class="py-3 px-2.5 text-[11px] whitespace-nowrap">
-            <div class="text-slate-500">Nett: ${formatRp(item.nettTotal)}</div>
-            <div class="text-emerald-600 font-bold">Margin: ${formatRp(margin)}</div>
+            ${isBarter
+              ? `<span class="text-slate-400 italic">Free / Komisi Affiliate</span>`
+              : `<div class="text-slate-500">Nett: ${formatRp(item.nettTotal)}</div>
+                 <div class="text-emerald-600 font-bold">Margin: ${formatRp(margin)}</div>`}
           </td>
         ` : ""}
         <td class="py-3 px-2.5">
-          <select data-kolid="${item.kolId}" class="status-select w-[170px] px-2 py-1.5 rounded-lg border text-[11px] font-semibold outline-none ${
+          <select data-kolid="${item.kolId}" class="status-select w-[185px] px-2 py-1.5 rounded-lg border text-[11px] font-semibold outline-none ${
             isOvertime ? "border-red-300 bg-red-50 text-red-700" :
             isPayment ? "border-amber-300 bg-amber-50 text-amber-800" :
             "border-rose-200 bg-white text-slate-700"
@@ -352,11 +464,15 @@ function renderTrackingTable() {
       const cmp = campaigns[activeCampaignId];
       if (!cmp?.items?.[kolId]) return;
 
+      const isNeedsPay = (!isAffCmp && newStatus.startsWith("7 -")) || (isAffCmp && newStatus.startsWith("5 -"));
+      const curPayStatus = cmp.items[kolId].paymentStatus;
+
       const updatedItems = {
         ...cmp.items,
         [kolId]: {
           ...cmp.items[kolId],
           status: newStatus,
+          ...(isNeedsPay && curPayStatus === "Barter" ? { paymentStatus: "Unpaid" } : {}),
           updatedBy: user?.name || "Unknown",
           updatedAt: new Date().toISOString()
         }
@@ -369,8 +485,22 @@ function renderTrackingTable() {
   tbody.querySelectorAll(".btn-editsow").forEach(btn => {
     btn.addEventListener("click", () => {
       const kolId = btn.dataset.editsow;
-      const item = campaigns[activeCampaignId]?.items?.[kolId];
+      const cmp = campaigns[activeCampaignId];
+      const item = cmp?.items?.[kolId];
       if (!item) return;
+
+      if ((cmp.type || "kol") === "affiliate") {
+        document.getElementById("ea-kol-id").value = kolId;
+        document.getElementById("edit-aff-item-name").textContent = `Affiliate: ${item.kolName} (@${item.tiktok || item.ig || "-"})`;
+        document.getElementById("ea-package").value = (item.sow && item.sow[0]) || "Vidio";
+        const dType = item.dealType || (Number(item.nettTotal || 0) > 0 || Number(item.publishTotal || 0) > 0 ? "paid" : "barter");
+        document.getElementById("ea-deal-type").value = dType;
+        document.getElementById("ea-nett").value = Number(item.nettTotal || 0);
+        document.getElementById("ea-publish").value = Number(item.publishTotal || 0);
+        document.getElementById("ea-fee-fields").classList.toggle("hidden", dType !== "paid");
+        toggleModal("modal-edit-aff-item", true);
+        return;
+      }
 
       document.getElementById("es-kol-id").value = kolId;
       document.getElementById("edit-sow-kol-name").textContent = `Kreator: ${item.kolName} (@${item.ig || item.tiktok || "-"})`;
@@ -400,14 +530,14 @@ function renderTrackingTable() {
 
   tbody.querySelectorAll(".btn-remove").forEach(btn => {
     btn.addEventListener("click", async () => {
-      const ok = await showConfirm("Keluarkan KOL?", "KOL ini akan dihapus dari shortlist campaign ini.", "Ya, Keluarkan");
+      const ok = await showConfirm("Keluarkan Kreator?", "Kreator ini akan dihapus dari shortlist campaign ini.", "Ya, Keluarkan");
       if (!ok) return;
       const cmp = campaigns[activeCampaignId];
       if (!cmp?.items) return;
       const updatedItems = { ...cmp.items };
       delete updatedItems[btn.dataset.remove];
       updateDemoItem("campaigns", activeCampaignId, { items: updatedItems });
-      showToast("KOL dikeluarkan dari campaign");
+      showToast("Kreator dikeluarkan dari campaign");
     });
   });
 }
@@ -419,6 +549,7 @@ function toggleModal(id, show) {
   el.classList.toggle("flex", show);
 }
 
+// Edit SOW KOL
 function updateEditSowPreview() {
   const kolId = document.getElementById("es-kol-id").value;
   const item = campaigns[activeCampaignId]?.items?.[kolId];
@@ -463,29 +594,81 @@ document.getElementById("form-edit-sow")?.addEventListener("submit", (e) => {
   showToast(`SOW ${item.kolName} diperbarui!`);
 });
 
+// Edit Affiliate Item in Campaign
+document.getElementById("ea-deal-type")?.addEventListener("change", (e) => {
+  const isPaid = e.target.value === "paid";
+  document.getElementById("ea-fee-fields").classList.toggle("hidden", !isPaid);
+  if (!isPaid) {
+    document.getElementById("ea-nett").value = 0;
+    document.getElementById("ea-publish").value = 0;
+  }
+});
+document.getElementById("close-modal-edit-aff-item")?.addEventListener("click", () => toggleModal("modal-edit-aff-item", false));
+document.getElementById("cancel-modal-edit-aff-item")?.addEventListener("click", () => toggleModal("modal-edit-aff-item", false));
+
+document.getElementById("form-edit-aff-item")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const kolId = document.getElementById("ea-kol-id").value;
+  const cmp = campaigns[activeCampaignId];
+  const item = cmp?.items?.[kolId];
+  if (!item) return;
+
+  const pkg = document.getElementById("ea-package").value;
+  const dType = document.getElementById("ea-deal-type").value;
+  const nettVal = dType === "paid" ? Number(document.getElementById("ea-nett").value || 0) : 0;
+  const pubVal = dType === "paid" ? Number(document.getElementById("ea-publish").value || 0) : 0;
+
+  const updatedItems = {
+    ...cmp.items,
+    [kolId]: {
+      ...item,
+      sow: [pkg],
+      dealType: dType,
+      nettTotal: nettVal,
+      publishTotal: pubVal,
+      paymentStatus: dType === "paid" ? (item.paymentStatus === "Paid" ? "Paid" : "Unpaid") : "Barter",
+      updatedBy: user?.name || "Unknown",
+      updatedAt: new Date().toISOString()
+    }
+  };
+  updateDemoItem("campaigns", activeCampaignId, { items: updatedItems });
+  toggleModal("modal-edit-aff-item", false);
+  showToast(`Data ${item.kolName} diperbarui!`);
+});
+
+// Create / Edit Campaign
 const closeCmpBtn = document.getElementById("close-modal-campaign");
 if (closeCmpBtn) {
   closeCmpBtn.setAttribute("type", "button");
   closeCmpBtn.addEventListener("click", () => toggleModal("modal-campaign", false));
 }
 
-document.getElementById("btn-new-campaign").addEventListener("click", () => {
+function openCreateCampaignModal(defaultType = "kol") {
   document.getElementById("form-campaign").reset();
   document.getElementById("c-edit-id").value = "";
-  document.getElementById("modal-campaign-title").textContent = "Buat Campaign Baru";
+  document.getElementById("c-type").value = defaultType;
+  document.getElementById("c-client-pay").value = "Belum";
+  document.getElementById("modal-campaign-title").textContent = defaultType === "affiliate"
+    ? "Buat Campaign Affiliate Baru"
+    : "Buat Campaign KOL Baru";
   document.getElementById("btn-submit-campaign").textContent = "Simpan Campaign";
   document.getElementById("btn-delete-campaign")?.classList.add("hidden");
   toggleModal("modal-campaign", true);
-});
+}
+
+document.getElementById("btn-new-campaign-kol")?.addEventListener("click", () => openCreateCampaignModal("kol"));
+document.getElementById("btn-new-campaign-aff")?.addEventListener("click", () => openCreateCampaignModal("affiliate"));
 
 document.getElementById("btn-edit-campaign")?.addEventListener("click", () => {
   const active = campaigns[activeCampaignId];
   if (!active) return;
   document.getElementById("c-edit-id").value = active.id;
+  document.getElementById("c-type").value = active.type || "kol";
   document.getElementById("c-name").value = active.name || "";
   document.getElementById("c-brand").value = active.brand || active.client || "";
   syncSelectOption(document.getElementById("c-niche"), active.niche || "Beauty");
   syncSelectOption(document.getElementById("c-status"), active.status || "Planning");
+  document.getElementById("c-client-pay").value = active.clientPaymentStatus || "Belum";
 
   document.getElementById("modal-campaign-title").textContent = "Edit Detail & Status Campaign";
   document.getElementById("btn-submit-campaign").textContent = "Simpan Perubahan";
@@ -497,7 +680,7 @@ document.getElementById("btn-delete-campaign")?.addEventListener("click", async 
   const editId = document.getElementById("c-edit-id").value;
   const target = campaigns[editId];
   if (!target) return;
-  const ok = await showConfirm("Hapus Campaign?", `Campaign "${target.name}" beserta seluruh shortlist KOL di dalamnya akan dihapus.`, "Ya, Hapus");
+  const ok = await showConfirm("Hapus Campaign?", `Campaign "${target.name}" beserta seluruh shortlist kreator di dalamnya akan dihapus.`, "Ya, Hapus");
   if (!ok) return;
 
   if (activeCampaignId === editId) activeCampaignId = "";
@@ -513,14 +696,18 @@ document.getElementById("form-campaign").addEventListener("submit", (e) => {
   const editId = document.getElementById("c-edit-id").value;
   const now = new Date().toISOString();
   const brandVal = document.getElementById("c-brand").value.trim();
+  const cmpType = document.getElementById("c-type").value || "kol";
+  const clientPayVal = document.getElementById("c-client-pay").value || "Belum";
 
   if (editId && campaigns[editId]) {
     updateDemoItem("campaigns", editId, {
+      type: cmpType,
       name: document.getElementById("c-name").value.trim(),
       brand: brandVal,
       client: brandVal,
       niche: document.getElementById("c-niche").value,
       status: document.getElementById("c-status").value,
+      clientPaymentStatus: clientPayVal,
       updatedBy: user?.name || "Unknown",
       updatedAt: now
     });
@@ -532,12 +719,14 @@ document.getElementById("form-campaign").addEventListener("submit", (e) => {
   const id = "CMP-" + Date.now().toString().slice(-5);
   const newCmp = {
     id,
+    type: cmpType,
     name: document.getElementById("c-name").value.trim(),
     brand: brandVal,
     client: brandVal,
     niche: document.getElementById("c-niche").value,
     pic: user?.name || "PIC",
     status: document.getElementById("c-status").value,
+    clientPaymentStatus: clientPayVal,
     createdBy: user?.name || "Unknown",
     updatedBy: user?.name || "Unknown",
     createdAt: now,
@@ -549,9 +738,10 @@ document.getElementById("form-campaign").addEventListener("submit", (e) => {
   setDemoItem("campaigns", id, newCmp);
   e.target.reset();
   toggleModal("modal-campaign", false);
-  showToast("Campaign baru berhasil dibuat!");
+  showToast(`Campaign ${cmpType === "affiliate" ? "Affiliate" : "KOL"} berhasil dibuat!`);
 });
 
+// Shortlist KOL (from Database KOL)
 function getAvailableMasterKols() {
   const existingIds = Object.keys(campaigns[activeCampaignId]?.items || {});
   return masterKols.filter(k => !existingIds.includes(k.id));
@@ -604,13 +794,68 @@ function renderShortlistKolDropdown(query = "") {
   sKolDropdown.classList.remove("hidden");
 }
 
+// Shortlist Affiliate (from Database Affiliate)
+function getAvailableMasterAffiliates() {
+  const existingIds = Object.keys(campaigns[activeCampaignId]?.items || {});
+  return masterAffiliates.filter(a => !existingIds.includes(a.id));
+}
+
+function renderShortlistAffDropdown(query = "") {
+  const q = query.trim().toLowerCase();
+  const available = getAvailableMasterAffiliates();
+  const matches = available.filter(a => {
+    if (!q) return true;
+    return (a.username || "").toLowerCase().includes(q) ||
+      (a.platform || "").toLowerCase().includes(q) ||
+      (a.niche || "").toLowerCase().includes(q) ||
+      (a.contact || "").includes(q);
+  }).slice(0, 25);
+
+  if (matches.length === 0) {
+    saAffDropdown.innerHTML = `<div class="p-3 text-slate-400 text-center">Tidak ada Affiliate cocok dengan "${query}".</div>`;
+  } else {
+    saAffDropdown.innerHTML = matches.map(a => `
+      <button type="button" data-id="${a.id}" class="opt-sa-aff w-full text-left px-3.5 py-2.5 hover:bg-rose-50 flex items-center justify-between gap-2 transition">
+        <div>
+          <div class="font-bold text-slate-800">${a.username} <span class="text-[10px] font-semibold text-rose-500">(${a.niche || "-"})</span></div>
+          <div class="text-[11px] text-slate-400">${a.platform || "Tiktok"} • Kontak: ${a.contact || "-"}</div>
+        </div>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-900 text-white shrink-0">${a.package || "Vidio"}</span>
+      </button>
+    `).join("");
+  }
+  saAffDropdown.classList.remove("hidden");
+}
+
 document.getElementById("btn-add-shortlist").addEventListener("click", () => {
   if (!activeCampaignId) {
     return showAlert("Belum Ada Campaign", "Pilih atau buat campaign terlebih dahulu sebelum menambah shortlist.", "warning");
   }
+  const active = campaigns[activeCampaignId];
+  const isAff = (active?.type || "kol") === "affiliate";
+
+  if (isAff) {
+    const availableAff = getAvailableMasterAffiliates();
+    if (availableAff.length === 0) {
+      return showAlert("Data Tidak Tersedia", "Semua kreator di Database Affiliate sudah masuk ke campaign ini, atau Database Affiliate masih kosong.", "info");
+    }
+    const firstAff = availableAff[0];
+    saAffIdInput.value = firstAff.id;
+    saAffSearchInput.value = `${firstAff.username} (${firstAff.platform || "Tiktok"})`;
+    document.getElementById("sa-package").value = (firstAff.package || "").toLowerCase().includes("live") ? "Livestreaming" : "Vidio";
+    document.getElementById("sa-deal-type").value = "barter";
+    document.getElementById("sa-fee-fields").classList.add("hidden");
+    document.getElementById("sa-nett").value = 0;
+    document.getElementById("sa-publish").value = 0;
+    btnClearSaAff.classList.remove("hidden");
+    saAffDropdown.classList.add("hidden");
+    toggleModal("modal-shortlist-aff", true);
+    return;
+  }
+
   const available = getAvailableMasterKols();
   if (available.length === 0) {
-    return showAlert("Data Tidak Tersedia", "Semua KOL di Master sudah masuk ke campaign ini, atau Master KOL masih kosong.", "info");
+    return showAlert("Data Tidak Tersedia", "Semua KOL di Database KOL sudah masuk ke campaign ini, atau Database KOL masih kosong.", "info");
   }
 
   const first = available[0];
@@ -623,6 +868,7 @@ document.getElementById("btn-add-shortlist").addEventListener("click", () => {
   toggleModal("modal-shortlist", true);
 });
 
+// Events for KOL shortlist modal
 sKolSearchInput?.addEventListener("focus", () => {
   sKolSearchInput.select();
   renderShortlistKolDropdown("");
@@ -686,6 +932,7 @@ document.getElementById("form-shortlist").addEventListener("submit", (e) => {
     sow: checked,
     nettTotal,
     publishTotal,
+    dealType: "paid",
     status: "1 - Sudah di Reach Out",
     postLink: "",
     boostCode: "",
@@ -703,6 +950,89 @@ document.getElementById("form-shortlist").addEventListener("submit", (e) => {
   showToast(`${kol.name} ditambahkan ke campaign!`);
 });
 
+// Events for Affiliate shortlist modal
+saAffSearchInput?.addEventListener("focus", () => {
+  saAffSearchInput.select();
+  renderShortlistAffDropdown("");
+});
+saAffSearchInput?.addEventListener("input", () => {
+  btnClearSaAff.classList.toggle("hidden", !saAffSearchInput.value);
+  saAffIdInput.value = "";
+  renderShortlistAffDropdown(saAffSearchInput.value);
+});
+btnClearSaAff?.addEventListener("click", () => {
+  saAffSearchInput.value = "";
+  saAffIdInput.value = "";
+  btnClearSaAff.classList.add("hidden");
+  saAffSearchInput.focus();
+  renderShortlistAffDropdown("");
+});
+saAffDropdown?.addEventListener("click", (e) => {
+  const opt = e.target.closest(".opt-sa-aff");
+  if (!opt) return;
+  const selected = masterAffiliates.find(a => a.id === opt.dataset.id);
+  if (!selected) return;
+  saAffIdInput.value = selected.id;
+  saAffSearchInput.value = `${selected.username} (${selected.platform || "Tiktok"})`;
+  document.getElementById("sa-package").value = (selected.package || "").toLowerCase().includes("live") ? "Livestreaming" : "Vidio";
+  btnClearSaAff.classList.remove("hidden");
+  saAffDropdown.classList.add("hidden");
+});
+
+document.getElementById("sa-deal-type")?.addEventListener("change", (e) => {
+  const isPaid = e.target.value === "paid";
+  document.getElementById("sa-fee-fields").classList.toggle("hidden", !isPaid);
+  if (!isPaid) {
+    document.getElementById("sa-nett").value = 0;
+    document.getElementById("sa-publish").value = 0;
+  }
+});
+
+document.getElementById("close-modal-shortlist-aff")?.addEventListener("click", () => toggleModal("modal-shortlist-aff", false));
+document.getElementById("cancel-modal-shortlist-aff")?.addEventListener("click", () => toggleModal("modal-shortlist-aff", false));
+
+document.getElementById("form-shortlist-aff")?.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const affId = saAffIdInput.value;
+  const aff = masterAffiliates.find(a => a.id === affId);
+  if (!aff) {
+    return showAlert("Affiliate Belum Dipilih", "Ketik dan pilih salah satu kreator dari Database Affiliate.", "warning");
+  }
+
+  const pkg = document.getElementById("sa-package").value || "Vidio";
+  const dealType = document.getElementById("sa-deal-type").value || "barter";
+  const nettTotal = dealType === "paid" ? Number(document.getElementById("sa-nett").value || 0) : 0;
+  const publishTotal = dealType === "paid" ? Number(document.getElementById("sa-publish").value || 0) : 0;
+
+  const itemData = {
+    kolId: aff.id,
+    kolName: aff.username,
+    platform: aff.platform || "Tiktok",
+    ig: "",
+    tiktok: aff.username,
+    wa: aff.contact || "",
+    sow: [pkg],
+    dealType,
+    nettTotal,
+    publishTotal,
+    status: "1 - Sudah di Reach Out",
+    postLink: "",
+    boostCode: "",
+    paymentStatus: dealType === "paid" ? "Unpaid" : "Barter",
+    addedBy: user?.name || "Unknown",
+    updatedBy: user?.name || "Unknown",
+    updatedAt: new Date().toISOString()
+  };
+
+  const cmp = campaigns[activeCampaignId];
+  const updatedItems = { ...(cmp?.items || {}), [aff.id]: itemData };
+  updateDemoItem("campaigns", activeCampaignId, { items: updatedItems });
+
+  toggleModal("modal-shortlist-aff", false);
+  showToast(`${aff.username} ditambahkan ke campaign affiliate!`);
+});
+
+// Post Link / Draft / Boost modal
 const closePostBtn = document.getElementById("close-modal-post");
 if (closePostBtn) {
   closePostBtn.setAttribute("type", "button");
@@ -723,6 +1053,7 @@ document.getElementById("form-post").addEventListener("submit", (e) => {
   const existingItem = cmp?.items?.[kolId];
   if (!existingItem) return;
 
+  const isAffCmp = (cmp.type || "kol") === "affiliate";
   const updatedItem = {
     ...existingItem,
     draftLink,
@@ -732,7 +1063,9 @@ document.getElementById("form-post").addEventListener("submit", (e) => {
     updatedBy: user?.name || "Unknown",
     updatedAt: now
   };
-  if (postLink) updatedItem.status = "6 - Sudah Post Content";
+  if (postLink) {
+    updatedItem.status = isAffCmp ? "4 - Posting" : "6 - Sudah Post Content";
+  }
 
   updateDemoItem("campaigns", activeCampaignId, {
     items: { ...cmp.items, [kolId]: updatedItem }
@@ -742,31 +1075,34 @@ document.getElementById("form-post").addEventListener("submit", (e) => {
   showToast("Draft, link konten & insight disimpan!");
 });
 
+// Export Proposal
 document.getElementById("btn-export-proposal").addEventListener("click", () => {
   const active = campaigns[activeCampaignId];
   if (!active) return showAlert("Belum Ada Campaign", "Pilih atau buat campaign terlebih dahulu.", "warning");
   const items = Object.values(active.items || {});
-  if (items.length === 0) return showAlert("Shortlist Kosong", "Tambahkan minimal 1 KOL sebelum export proposal.", "warning");
+  if (items.length === 0) return showAlert("Shortlist Kosong", "Tambahkan minimal 1 kreator sebelum export proposal.", "warning");
 
+  const isAffCmp = (active.type || "kol") === "affiliate";
   const today = new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
   const totalPublish = items.reduce((acc, i) => acc + Number(i.publishTotal || 0), 0);
   const brandName = active.brand || active.client || "-";
 
   const sheetData = [
-    ["PROPOSAL KOL CAMPAIGN"],
+    [isAffCmp ? "PROPOSAL AFFILIATE CAMPAIGN" : "PROPOSAL KOL CAMPAIGN"],
     ["Campaign", active.name],
     ["Brand / Klien", brandName],
     ["Niche", active.niche || "-"],
+    ["Status Pembayaran Klien", active.clientPaymentStatus || "Belum"],
     ["Tanggal Export", today],
     [],
-    ["No", "Nama KOL", "Instagram", "TikTok", "Deliverables (SOW)", "Publish Rate (IDR)", "Status"]
+    ["No", "Nama Kreator", "Platform / IG", "TikTok", "Deliverables (SOW / Package)", "Publish Rate (IDR)", "Status"]
   ];
 
   items.forEach((item, idx) => {
     sheetData.push([
       idx + 1,
       item.kolName,
-      item.ig ? `@${item.ig}` : "-",
+      item.platform || (item.ig ? `@${item.ig}` : "-"),
       item.tiktok ? `@${item.tiktok}` : "-",
       (item.sow || []).map(s => SOW_LABELS[s] || s).join(" + ") || (item.sowList || []).join(" + "),
       Number(item.publishTotal || 0),
@@ -774,7 +1110,7 @@ document.getElementById("btn-export-proposal").addEventListener("click", () => {
     ]);
   });
 
-  const startDataRow = 8;
+  const startDataRow = 9;
   const endDataRow = startDataRow + items.length - 1;
   sheetData.push([
     "",
@@ -803,7 +1139,7 @@ document.getElementById("btn-export-proposal").addEventListener("click", () => {
   ];
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Proposal KOL");
+  XLSX.utils.book_append_sheet(wb, ws, isAffCmp ? "Proposal Affiliate" : "Proposal KOL");
 
   const safeName = brandName.replace(/[^a-zA-Z0-9]/g, "_");
   XLSX.writeFile(wb, `Proposal_${safeName}.xlsx`);
@@ -835,6 +1171,7 @@ cmpDropdown?.addEventListener("click", (e) => {
   const opt = e.target.closest(".opt-cmp");
   if (!opt) return;
   activeCampaignId = opt.dataset.id;
+  filterStatusEl.value = "";
   cmpDropdown.classList.add("hidden");
   populateCampaignSelector();
   renderTrackingTable();
@@ -847,6 +1184,9 @@ document.addEventListener("click", (e) => {
   }
   if (!e.target.closest("#s-kol-search") && !e.target.closest("#s-kol-dropdown") && !e.target.closest("#btn-clear-s-kol")) {
     sKolDropdown?.classList.add("hidden");
+  }
+  if (!e.target.closest("#sa-aff-search") && !e.target.closest("#sa-aff-dropdown") && !e.target.closest("#btn-clear-sa-aff")) {
+    saAffDropdown?.classList.add("hidden");
   }
 });
 

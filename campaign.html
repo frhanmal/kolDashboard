@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Campaign & Tracking - KOL Management</title>
+  <title>Campaign & Tracking - KOL & Affiliate Management</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23f43f5e'/%3E%3Cstop offset='100%25' stop-color='%23f472b6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='50%25' y='54%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-weight='800' font-size='34' fill='white'%3EK%3C/text%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -55,20 +55,26 @@
   <main class="lg:ml-64 flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 min-w-0 w-full">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Campaign & Tracking KOL</h1>
-        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Shortlist dari Master KOL, pantau 11 status SOP, dan export proposal klien.</p>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Campaign & Tracking (KOL & Affiliate)</h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kelola campaign <strong>KOL</strong> maupun <strong>Affiliate</strong>, shortlist kreator dari database masing-masing, tracking SOP, & status pembayaran klien.</p>
       </div>
-      <button id="btn-new-campaign" class="inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-rose-200 transition">
-        <i data-lucide="folder-plus" class="w-4 h-4"></i>
-        <span>Buat Campaign Baru</span>
-      </button>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" id="btn-new-campaign-kol" class="inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-rose-200 transition">
+          <i data-lucide="folder-plus" class="w-4 h-4"></i>
+          <span>+ Campaign KOL</span>
+        </button>
+        <button type="button" id="btn-new-campaign-aff" class="inline-flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-slate-200 transition">
+          <i data-lucide="shopping-bag" class="w-4 h-4 text-pink-400"></i>
+          <span>+ Campaign Affiliate</span>
+        </button>
+      </div>
     </header>
 
     <div class="bg-white p-4 sm:p-5 rounded-2xl border border-rose-100/80 shadow-sm shadow-rose-100/30 mb-6 space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-4">
-        <div class="flex flex-wrap items-center gap-3 flex-1 min-w-0">
+        <div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-0">
           <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pilih Campaign:</label>
-          <div class="relative min-w-[220px] flex-1 max-w-sm">
+          <div class="relative min-w-[230px] flex-1 max-w-sm">
             <div class="relative">
               <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
               <input type="text" id="campaign-search-input" autocomplete="off" placeholder="Ketik nama campaign atau brand..."
@@ -77,8 +83,11 @@
                 ✕
               </button>
             </div>
-            <div id="campaign-search-dropdown" class="hidden absolute left-0 right-0 mt-1.5 bg-white border border-rose-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto z-30 divide-y divide-rose-50 text-xs"></div>
+            <div id="campaign-search-dropdown" class="hidden absolute left-0 right-0 mt-1.5 bg-white border border-rose-200 rounded-2xl shadow-xl max-h-64 overflow-y-auto z-30 divide-y divide-rose-50 text-xs"></div>
           </div>
+
+          <span id="active-campaign-type-badge" class="hidden px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wide">KOL</span>
+
           <div id="campaign-status-wrap" class="hidden inline-flex items-center gap-1.5">
             <label for="active-campaign-status" class="text-[11px] font-bold text-slate-400 uppercase">Status:</label>
             <select id="active-campaign-status" class="px-2.5 py-1.5 rounded-xl border border-rose-200 bg-rose-50/60 text-xs font-bold text-rose-700 focus:bg-white focus:ring-2 focus:ring-rose-400 outline-none cursor-pointer transition">
@@ -92,6 +101,16 @@
               <option value="Completed">Completed</option>
             </select>
           </div>
+
+          <div id="campaign-client-pay-wrap" class="hidden inline-flex items-center gap-1.5">
+            <label for="active-client-pay-status" class="text-[11px] font-bold text-slate-400 uppercase">Bayar Klien:</label>
+            <select id="active-client-pay-status" class="px-2.5 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-rose-400 outline-none cursor-pointer transition">
+              <option value="Belum">Belum</option>
+              <option value="DP">DP</option>
+              <option value="Lunas">Lunas</option>
+            </select>
+          </div>
+
           <span id="campaign-meta" class="text-xs text-slate-500"></span>
         </div>
 
@@ -102,7 +121,7 @@
           </button>
           <button id="btn-add-shortlist" class="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold px-3.5 py-2 rounded-xl transition">
             <i data-lucide="user-plus" class="w-4 h-4"></i>
-            <span>+ Shortlist KOL</span>
+            <span id="btn-add-shortlist-label">+ Shortlist KOL</span>
           </button>
           <button id="btn-export-proposal" class="inline-flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition">
             <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
@@ -113,11 +132,11 @@
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-rose-50">
         <div class="bg-rose-50/40 rounded-xl p-3">
-          <p class="text-[11px] text-slate-500 font-medium">Total KOL Shortlist</p>
+          <p id="sum-kol-label" class="text-[11px] text-slate-500 font-medium">Total Kreator Shortlist</p>
           <p id="sum-kol" class="text-lg font-extrabold text-slate-800 mt-0.5">0</p>
         </div>
         <div class="bg-rose-50/40 rounded-xl p-3">
-          <p class="text-[11px] text-slate-500 font-medium">Sudah Post (Status 6+)</p>
+          <p id="sum-posted-label" class="text-[11px] text-slate-500 font-medium">Sudah Post Content</p>
           <p id="sum-posted" class="text-lg font-extrabold text-emerald-600 mt-0.5">0</p>
         </div>
         <div class="bg-rose-50/40 rounded-xl p-3">
@@ -135,7 +154,7 @@
       <div class="flex flex-wrap items-center gap-3 flex-1 min-w-0">
         <div class="relative min-w-[200px] flex-1 max-w-sm">
           <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
-          <input type="text" id="search-campaign-kol" placeholder="Cari nama KOL, @akun, WA, SOW, boost code..."
+          <input type="text" id="search-campaign-kol" placeholder="Cari nama kreator, @akun, WA, SOW, boost code..."
             class="w-full pl-9 pr-3 py-1.5 rounded-xl border border-rose-200 bg-white text-xs text-slate-700 focus:ring-2 focus:ring-rose-400 outline-none transition" />
         </div>
 
@@ -147,7 +166,7 @@
         </div>
       </div>
 
-      <p class="text-[11px] text-slate-400">Tip: Ubah status ke <strong class="text-amber-600">7 - Butuh Payment</strong> agar otomatis masuk ke menu Finance.</p>
+      <p id="campaign-tip-text" class="text-[11px] text-slate-400">Tip: Ubah status ke <strong class="text-amber-600">7 - Butuh Payment</strong> agar otomatis masuk ke menu Finance.</p>
     </div>
 
     <div class="bg-white rounded-2xl border border-rose-100/80 shadow-sm shadow-rose-100/30 overflow-hidden">
@@ -156,8 +175,8 @@
           <thead>
             <tr class="bg-rose-50/50 border-b border-rose-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
               <th class="py-3 px-2.5 text-center">Kreator</th>
-              <th class="py-3 px-2.5 text-center">SOW</th>
-              <th class="py-3 px-2.5 text-center">Publish Rate</th>
+              <th class="py-3 px-2.5 text-center">SOW / Package</th>
+              <th class="py-3 px-2.5 text-center">Publish Rate / Deal</th>
               <th class="py-3 px-2.5 text-center owner-col hidden">Nett & Margin</th>
               <th class="py-3 px-2.5 text-center">Status SOP</th>
               <th class="py-3 px-2.5 text-center">Link & Boost</th>
@@ -171,6 +190,7 @@
     </div>
   </main>
 
+  <!-- Modal Create / Edit Campaign -->
   <div id="modal-campaign" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-rose-100 overflow-hidden">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
@@ -179,6 +199,13 @@
       </div>
       <form id="form-campaign" class="p-5 space-y-4">
         <input type="hidden" id="c-edit-id" value="" />
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Tipe Campaign *</label>
+          <select id="c-type" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-sm font-bold bg-rose-50/40 text-rose-700 outline-none">
+            <option value="kol">Campaign KOL (Database KOL)</option>
+            <option value="affiliate">Campaign Affiliate (Database Affiliate)</option>
+          </select>
+        </div>
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Campaign *</label>
           <input type="text" id="c-name" required placeholder="Contoh: #494 Chitato Beauty Launch"
@@ -208,18 +235,28 @@
             </select>
           </div>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Status Campaign</label>
-          <select id="c-status" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-sm bg-white">
-            <option value="Planning">Planning</option>
-            <option value="Active">Active</option>
-            <option value="2 - Unsent ke Client, Ongoing">2 - Unsent ke Client, Ongoing</option>
-            <option value="3 - Sent ke Client, Ongoing">3 - Sent ke Client, Ongoing</option>
-            <option value="4 - Approved, Campaign Onprocess">4 - Approved, Campaign Onprocess</option>
-            <option value="1 - On Hold Postponed">1 - On Hold Postponed</option>
-            <option value="5 - Complete, Payment Due">5 - Complete, Payment Due</option>
-            <option value="Completed">Completed</option>
-          </select>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Status Campaign</label>
+            <select id="c-status" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-xs bg-white">
+              <option value="Planning">Planning</option>
+              <option value="Active">Active</option>
+              <option value="2 - Unsent ke Client, Ongoing">2 - Unsent ke Client, Ongoing</option>
+              <option value="3 - Sent ke Client, Ongoing">3 - Sent ke Client, Ongoing</option>
+              <option value="4 - Approved, Campaign Onprocess">4 - Approved, Campaign Onprocess</option>
+              <option value="1 - On Hold Postponed">1 - On Hold Postponed</option>
+              <option value="5 - Complete, Payment Due">5 - Complete, Payment Due</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Status Pembayaran Klien</label>
+            <select id="c-client-pay" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-xs font-bold bg-white">
+              <option value="Belum">Belum</option>
+              <option value="DP">DP</option>
+              <option value="Lunas">Lunas</option>
+            </select>
+          </div>
         </div>
         <div class="flex items-center justify-between gap-2 pt-2">
           <button type="button" id="btn-delete-campaign" class="hidden px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold transition">Hapus Campaign</button>
@@ -232,18 +269,19 @@
     </div>
   </div>
 
+  <!-- Modal Shortlist KOL (Database KOL) -->
   <div id="modal-shortlist" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-rose-100">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
         <div>
-          <h2 class="text-base font-bold text-slate-800">Shortlist KOL dari Master</h2>
+          <h2 class="text-base font-bold text-slate-800">Shortlist KOL dari Database KOL</h2>
           <p class="text-[11px] text-slate-500">Ketik nama/akun KOL & pilih SOW, harga Publish otomatis terhitung.</p>
         </div>
         <button id="close-modal-shortlist" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <form id="form-shortlist" class="p-5 space-y-4">
         <div class="relative">
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Cari & Pilih KOL dari Master *</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Cari & Pilih KOL dari Database KOL *</label>
           <div class="relative">
             <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
             <input type="text" id="s-kol-search" autocomplete="off" placeholder="Ketik nama KOL, @akun, atau WA..."
@@ -297,6 +335,68 @@
     </div>
   </div>
 
+  <!-- Modal Shortlist Affiliate (Database Affiliate) -->
+  <div id="modal-shortlist-aff" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-rose-100">
+      <div class="p-5 border-b border-rose-100 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-800">Shortlist Affiliate dari Database Affiliate</h2>
+          <p class="text-[11px] text-slate-500">Pilih afiliator, tentukan package (Vidio / Livestreaming), dan skema deal (Barter / Paid).</p>
+        </div>
+        <button type="button" id="close-modal-shortlist-aff" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="form-shortlist-aff" class="p-5 space-y-4">
+        <div class="relative">
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Cari & Pilih Affiliate dari Database Affiliate *</label>
+          <div class="relative">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="sa-aff-search" autocomplete="off" placeholder="Ketik username affiliate, platform, atau kontak..."
+              class="w-full pl-9 pr-8 py-2.5 rounded-xl border border-rose-200 bg-rose-50/30 text-sm text-slate-800 focus:bg-white focus:ring-2 focus:ring-rose-400 outline-none" />
+            <button type="button" id="btn-clear-sa-aff" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-rose-600 text-xs font-bold px-1">✕</button>
+          </div>
+          <input type="hidden" id="sa-aff-id" />
+          <div id="sa-aff-dropdown" class="hidden absolute left-0 right-0 mt-1 bg-white border border-rose-200 rounded-2xl shadow-xl max-h-52 overflow-y-auto z-30 divide-y divide-rose-50 text-xs"></div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Package Affiliate *</label>
+            <select id="sa-package" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-xs font-bold bg-white outline-none focus:ring-2 focus:ring-rose-400">
+              <option value="Vidio">Vidio</option>
+              <option value="Livestreaming">Livestreaming</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Skema Deal *</label>
+            <select id="sa-deal-type" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-xs font-bold bg-white outline-none focus:ring-2 focus:ring-rose-400">
+              <option value="barter">Barter Sampel (Gratis / Fee Rp 0)</option>
+              <option value="paid">Paid / Ada Fee Tambahan</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="sa-fee-fields" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 bg-rose-50/50 p-3.5 rounded-2xl border border-rose-100">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Fee Nett Affiliate (Rp)</label>
+            <input type="number" id="sa-nett" min="0" value="0" placeholder="0"
+              class="w-full px-3 py-2 rounded-xl border border-rose-200 text-xs font-bold bg-white outline-none focus:ring-2 focus:ring-rose-400" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Publish Rate ke Klien (Rp)</label>
+            <input type="number" id="sa-publish" min="0" value="0" placeholder="0"
+              class="w-full px-3 py-2 rounded-xl border border-rose-200 text-xs font-bold bg-white outline-none focus:ring-2 focus:ring-rose-400" />
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="cancel-modal-shortlist-aff" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-md">Masukkan ke Campaign</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Edit SOW KOL -->
   <div id="modal-edit-sow" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-rose-100">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
@@ -349,6 +449,51 @@
     </div>
   </div>
 
+  <!-- Modal Edit Affiliate in Campaign -->
+  <div id="modal-edit-aff-item" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-rose-100 overflow-hidden">
+      <div class="p-5 border-b border-rose-100 flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-slate-800">Edit Package & Deal Affiliate</h2>
+          <p id="edit-aff-item-name" class="text-[11px] text-rose-600 font-semibold">-</p>
+        </div>
+        <button type="button" id="close-modal-edit-aff-item" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form id="form-edit-aff-item" class="p-5 space-y-4">
+        <input type="hidden" id="ea-kol-id" />
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Package Affiliate *</label>
+          <select id="ea-package" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-xs font-bold bg-white">
+            <option value="Vidio">Vidio</option>
+            <option value="Livestreaming">Livestreaming</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Skema Deal *</label>
+          <select id="ea-deal-type" class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-xs font-bold bg-white">
+            <option value="barter">Barter Sampel (Gratis / Fee Rp 0)</option>
+            <option value="paid">Paid / Ada Fee Tambahan</option>
+          </select>
+        </div>
+        <div id="ea-fee-fields" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 bg-rose-50/50 p-3.5 rounded-2xl border border-rose-100">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Fee Nett Affiliate (Rp)</label>
+            <input type="number" id="ea-nett" min="0" value="0" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-xs font-bold bg-white" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Publish Rate Klien (Rp)</label>
+            <input type="number" id="ea-publish" min="0" value="0" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-xs font-bold bg-white" />
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" id="cancel-modal-edit-aff-item" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold">Simpan Perubahan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Post / Link / Boost -->
   <div id="modal-post" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-rose-100 overflow-hidden">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
@@ -366,7 +511,7 @@
             class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 outline-none" />
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Link Konten Tayang (IG / TikTok)</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Link Konten Tayang (IG / TikTok / Shopee)</label>
           <input type="url" id="p-link" placeholder="https://www.tiktok.com/@..."
             class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 outline-none" />
         </div>

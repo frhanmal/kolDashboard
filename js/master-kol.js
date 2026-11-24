@@ -449,10 +449,10 @@ async function deleteKOL(id) {
   const isFromLead = Boolean(targetKol?.sourceLeadId);
 
   const ok = await showConfirm(
-    "Hapus dari Talent Database?",
+    "Hapus dari Database KOL?",
     isFromLead
       ? `"${targetKol.name}" berasal dari Lead Masuk. Jika dihapus dari sini, statusnya akan otomatis dikembalikan ke menu Lead Masuk (Pending).`
-      : "Data KOL ini akan dihapus permanen dari Talent Database.",
+      : "Data KOL ini akan dihapus permanen dari Database KOL.",
     "Ya, Hapus"
   );
   if (!ok) return;

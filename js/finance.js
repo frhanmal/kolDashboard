@@ -46,11 +46,16 @@ function loadFinanceData() {
 function extractPaymentQueue() {
   paymentRows = [];
   Object.values(campaigns || {}).forEach(cmp => {
+    const isAff = (cmp.type || "kol") === "affiliate";
     Object.values(cmp.items || {}).forEach(item => {
-      if ((item.status || "").startsWith("7 -") || item.paymentStatus === "Paid") {
+      const st = item.status || "";
+      const isNeedsPay = (!isAff && st.startsWith("7 -")) || (isAff && st.startsWith("5 -"));
+      if (isNeedsPay || item.paymentStatus === "Paid") {
         paymentRows.push({
           campaignId: cmp.id,
           campaignName: cmp.name,
+          campaignType: cmp.type || "kol",
+          clientPaymentStatus: cmp.clientPaymentStatus || "Belum",
           brand: cmp.brand || cmp.client || "-",
           ...item,
           paymentStatus: item.paymentStatus || "Unpaid"
@@ -121,7 +126,10 @@ function renderFinanceTable() {
       <tr class="hover:bg-rose-50/30 transition">
         <td class="py-3.5 px-4">
           <div class="font-bold text-slate-800">${row.campaignName}</div>
-          <div class="text-[11px] text-slate-400">${row.brand}</div>
+          <div class="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+            <span>${row.brand}</span>
+            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold ${row.clientPaymentStatus === "Lunas" ? "bg-emerald-100 text-emerald-700" : (row.clientPaymentStatus === "DP" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600")}">Klien: ${row.clientPaymentStatus}</span>
+          </div>
         </td>
         <td class="py-3.5 px-4">
           <div class="font-bold text-slate-800">${row.kolName}</div>
