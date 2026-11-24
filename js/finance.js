@@ -1,6 +1,7 @@
-import { initPageLayout, showAlert, showConfirm, showToast } from "./auth.js";
-import { db } from "./firebase-config.js";
-import { ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  initPageLayout, showAlert, showConfirm, showToast,
+  subscribeDemoCollection, updateDemoItem
+} from "./auth.js";
 
 const currentUser = initPageLayout("finance", ["owner", "finance"]);
 
@@ -35,8 +36,8 @@ function compressImage(file, maxWidth = 900, quality = 0.72) {
 }
 
 function loadFinanceData() {
-  onValue(ref(db, "campaigns"), (snap) => {
-    campaigns = snap.val() || {};
+  subscribeDemoCollection("campaigns", (data) => {
+    campaigns = data || {};
     extractPaymentQueue();
     renderFinanceTable();
   });
@@ -50,7 +51,7 @@ function extractPaymentQueue() {
         paymentRows.push({
           campaignId: cmp.id,
           campaignName: cmp.name,
-          brand: cmp.brand,
+          brand: cmp.brand || cmp.client || "-",
           ...item,
           paymentStatus: item.paymentStatus || "Unpaid"
         });
@@ -198,7 +199,7 @@ document.getElementById("finance-table-body").addEventListener("click", async (e
     const ok = await showConfirm("Batalkan Status Paid?", "Status pembayaran akan dikembalikan menjadi Unpaid.", "Ya, Kembalikan");
     if (!ok) return;
 
-    await updatePaymentStatus(undoBtn.dataset.cmp, undoBtn.dataset.kol, {
+    updatePaymentStatus(undoBtn.dataset.cmp, undoBtn.dataset.kol, {
       paymentStatus: "Unpaid",
       paidAt: "",
       paidBy: "",
@@ -253,17 +254,26 @@ document.getElementById("modal-proof-preview")?.addEventListener("click", (e) =>
   if (e.target.id === "modal-proof-preview") closeProofModal();
 });
 
-async function updatePaymentStatus(cmpId, kolId, payload) {
-  await update(ref(db, `campaigns/${cmpId}/items/${kolId}`), payload);
+function updatePaymentStatus(cmpId, kolId, payload) {
+  const cmp = campaigns[cmpId];
+  const existingItem = cmp?.items?.[kolId];
+  if (!existingItem) return;
+
+  updateDemoItem("campaigns", cmpId, {
+    items: {
+      ...cmp.items,
+      [kolId]: { ...existingItem, ...payload }
+    }
+  });
 }
 
-document.getElementById("form-pay").addEventListener("submit", async (e) => {
+document.getElementById("form-pay").addEventListener("submit", (e) => {
   e.preventDefault();
   const cmpId = document.getElementById("pay-cmp-id").value;
   const kolId = document.getElementById("pay-kol-id").value;
   const now = new Date().toISOString();
 
-  await updatePaymentStatus(cmpId, kolId, {
+  updatePaymentStatus(cmpId, kolId, {
     paymentStatus: "Paid",
     paymentNote: document.getElementById("pay-note").value.trim(),
     paymentProof: document.getElementById("pay-proof-data").value || "",

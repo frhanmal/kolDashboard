@@ -14,8 +14,7 @@
 </head>
 <body class="bg-[#FFF9FA] text-slate-800 flex min-h-screen">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed h-full shadow-sm shadow-rose-100/30 z-20">
+  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed inset-y-0 left-0 -translate-x-full lg:translate-x-0 h-full shadow-sm shadow-rose-100/30 z-40">
     <div>
       <div class="p-5 border-b border-rose-50 flex items-center gap-3">
         <div class="w-10 h-10 bg-gradient-to-tr from-rose-500 to-pink-400 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-md shadow-rose-200">K</div>
@@ -34,19 +33,18 @@
           <p id="user-name" class="text-xs font-bold text-slate-800">-</p>
           <span id="user-role-badge" class="text-[10px]">-</span>
         </div>
-        <button id="btn-logout" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100/60 rounded-xl transition">
+        <button type="button" id="btn-logout" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100/60 rounded-xl transition">
           <i data-lucide="log-out" class="w-4 h-4"></i>
         </button>
       </div>
     </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="ml-64 flex-1 p-8">
+  <main class="lg:ml-64 flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 min-w-0 w-full">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Campaign & Tracking KOL</h1>
-        <p class="text-sm text-slate-500 mt-0.5">Shortlist dari Master KOL, pantau 11 status SOP, dan export proposal klien.</p>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Campaign & Tracking KOL</h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Shortlist dari Master KOL, pantau 11 status SOP, dan export proposal klien.</p>
       </div>
       <button id="btn-new-campaign" class="inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-rose-200 transition">
         <i data-lucide="folder-plus" class="w-4 h-4"></i>
@@ -54,12 +52,11 @@
       </button>
     </header>
 
-    <!-- Selector Campaign (Searchable) & Summary Bar -->
-    <div class="bg-white p-5 rounded-2xl border border-rose-100/80 shadow-sm shadow-rose-100/30 mb-6 space-y-4">
+    <div class="bg-white p-4 sm:p-5 rounded-2xl border border-rose-100/80 shadow-sm shadow-rose-100/30 mb-6 space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-4">
-        <div class="flex flex-wrap items-center gap-3 flex-1">
+        <div class="flex flex-wrap items-center gap-3 flex-1 min-w-0">
           <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pilih Campaign:</label>
-          <div class="relative min-w-[270px] flex-1 max-w-sm">
+          <div class="relative min-w-[220px] flex-1 max-w-sm">
             <div class="relative">
               <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
               <input type="text" id="campaign-search-input" autocomplete="off" placeholder="Ketik nama campaign atau brand..."
@@ -85,7 +82,6 @@
         </div>
       </div>
 
-      <!-- Mini Summary Campaign -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t border-rose-50">
         <div class="bg-rose-50/40 rounded-xl p-3">
           <p class="text-[11px] text-slate-500 font-medium">Total KOL Shortlist</p>
@@ -106,17 +102,14 @@
       </div>
     </div>
 
-    <!-- Filter Status SOP & Search Manual -->
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-      <div class="flex flex-wrap items-center gap-3 flex-1">
-        <!-- Box Pencarian Manual -->
-        <div class="relative min-w-[240px] flex-1 max-w-sm">
+      <div class="flex flex-wrap items-center gap-3 flex-1 min-w-0">
+        <div class="relative min-w-[200px] flex-1 max-w-sm">
           <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
           <input type="text" id="search-campaign-kol" placeholder="Cari nama KOL, @akun, WA, SOW, boost code..."
             class="w-full pl-9 pr-3 py-1.5 rounded-xl border border-rose-200 bg-white text-xs text-slate-700 focus:ring-2 focus:ring-rose-400 outline-none transition" />
         </div>
 
-        <!-- Dropdown Filter Status -->
         <div class="flex items-center gap-2">
           <span class="text-xs font-semibold text-slate-500">Filter Status:</span>
           <select id="filter-status" class="px-3 py-1.5 rounded-xl border border-rose-200 bg-white text-xs font-medium text-slate-700 outline-none focus:ring-2 focus:ring-rose-400">
@@ -128,29 +121,27 @@
       <p class="text-[11px] text-slate-400">Tip: Ubah status ke <strong class="text-amber-600">7 - Butuh Payment</strong> agar otomatis masuk ke menu Finance.</p>
     </div>
 
-<!-- Tabel Tracking KOL dalam Campaign (Muat Pas Tanpa Scroll Samping) -->
     <div class="bg-white rounded-2xl border border-rose-100/80 shadow-sm shadow-rose-100/30 overflow-hidden">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-rose-50/50 border-b border-rose-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-            <th class="py-3 px-2.5 text-center">Kreator</th>
-            <th class="py-3 px-2.5 text-center">SOW</th>
-            <th class="py-3 px-2.5 text-center">Publish Rate</th>
-            <th class="py-3 px-2.5 text-center owner-col hidden">Nett & Margin</th>
-            <th class="py-3 px-2.5 text-center">Status SOP</th>
-            <th class="py-3 px-2.5 text-center">Link & Boost</th>
-            <th class="py-3 px-2.5 text-center">Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="tracking-table-body" class="divide-y divide-rose-50 text-xs">
-          <!-- Diisi campaign.js -->
-        </tbody>
-      </table>
-    </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
+          <thead>
+            <tr class="bg-rose-50/50 border-b border-rose-100 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              <th class="py-3 px-2.5 text-center">Kreator</th>
+              <th class="py-3 px-2.5 text-center">SOW</th>
+              <th class="py-3 px-2.5 text-center">Publish Rate</th>
+              <th class="py-3 px-2.5 text-center owner-col hidden">Nett & Margin</th>
+              <th class="py-3 px-2.5 text-center">Status SOP</th>
+              <th class="py-3 px-2.5 text-center">Link & Boost</th>
+              <th class="py-3 px-2.5 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tracking-table-body" class="divide-y divide-rose-50 text-xs">
+          </tbody>
+        </table>
+      </div>
     </div>
   </main>
 
-  <!-- Modal 1: Buat Campaign Baru -->
   <div id="modal-campaign" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-rose-100 overflow-hidden">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
@@ -163,7 +154,7 @@
           <input type="text" id="c-name" required placeholder="Contoh: #494 Chitato Beauty Launch"
             class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 outline-none" />
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Brand / Klien *</label>
             <input type="text" id="c-brand" required placeholder="Contoh: Chitato"
@@ -199,9 +190,8 @@
     </div>
   </div>
 
-  <!-- Modal 2: Shortlist KOL dari Master (Dengan Search Manual) -->
   <div id="modal-shortlist" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-rose-100 overflow-hidden">
+    <div class="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-rose-100">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
         <div>
           <h2 class="text-base font-bold text-slate-800">Shortlist KOL dari Master</h2>
@@ -224,7 +214,7 @@
 
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-2">Pilih SOW / Deliverables *</label>
-          <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <label class="flex items-center gap-2 p-2.5 rounded-xl border border-rose-100 hover:bg-rose-50/40 cursor-pointer">
               <input type="checkbox" value="story" class="sow-check accent-rose-500" /> <span>1x IG Story</span>
             </label>
@@ -265,9 +255,8 @@
     </div>
   </div>
 
-  <!-- Modal 2b: Edit SOW / Deliverables KOL di Campaign -->
   <div id="modal-edit-sow" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-rose-100 overflow-hidden">
+    <div class="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl border border-rose-100">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
         <div>
           <h2 class="text-base font-bold text-slate-800">Edit SOW / Deliverables</h2>
@@ -277,10 +266,9 @@
       </div>
       <form id="form-edit-sow" class="p-5 space-y-4">
         <input type="hidden" id="es-kol-id" />
-
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-2">Update SOW / Deliverables *</label>
-          <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <label class="flex items-center gap-2 p-2.5 rounded-xl border border-rose-100 hover:bg-rose-50/40 cursor-pointer">
               <input type="checkbox" value="story" class="esow-check accent-rose-500" /> <span>1x IG Story</span>
             </label>
@@ -301,7 +289,6 @@
             </label>
           </div>
         </div>
-
         <div class="bg-rose-50/70 rounded-xl p-3.5 flex justify-between items-center text-xs">
           <div>
             <p class="text-slate-500">Total Publish Rate (Klien):</p>
@@ -312,7 +299,6 @@
             <p id="es-preview-nett" class="text-sm font-bold text-slate-700">Rp 0</p>
           </div>
         </div>
-
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" id="cancel-modal-edit-sow" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
           <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-semibold shadow-md shadow-rose-200">Simpan SOW</button>
@@ -321,7 +307,6 @@
     </div>
   </div>
 
-  <!-- Modal 3: Input Link Post & Boost Code -->
   <div id="modal-post" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-rose-100 overflow-hidden">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">

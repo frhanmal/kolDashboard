@@ -1,28 +1,15 @@
-import { initPageLayout, showConfirm, showToast, showAlert } from "./auth.js";
-import { db, isFirebaseConfigured } from "./firebase-config.js";
-import { ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  initPageLayout, showConfirm, showToast, showAlert,
+  subscribeDemoCollection, setDemoItem, removeDemoItem
+} from "./auth.js";
 
 const currentUser = initPageLayout("settings", ["owner"]);
-
-const DEFAULT_DEMO_USERS = {
-  owner: { username: "owner", password: "123", name: "Owner Agency", role: "owner" },
-  kol: { username: "kol", password: "123", name: "Staff KOL Specialist", role: "kol_specialist" },
-  finance: { username: "finance", password: "123", name: "Admin Finance", role: "finance" }
-};
 
 let usersMap = {};
 
 function loadUsers() {
-  if (!isFirebaseConfigured) {
-    const saved = localStorage.getItem("demo_users");
-    usersMap = saved ? JSON.parse(saved) : { ...DEFAULT_DEMO_USERS };
-    if (!saved) localStorage.setItem("demo_users", JSON.stringify(usersMap));
-    renderUsers();
-    return;
-  }
-
-  onValue(ref(db, "users"), (snap) => {
-    usersMap = snap.val() || {};
+  subscribeDemoCollection("users", (data) => {
+    usersMap = data || {};
     renderUsers();
   });
 }
@@ -59,7 +46,7 @@ function renderUsers() {
       </td>
       <td class="py-3 px-4 text-right">
         ${u.username !== currentUser?.username
-          ? `<button data-uname="${u.username}" class="btn-del-user px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-red-100 text-slate-500 hover:text-red-600 text-xs font-semibold">Hapus</button>`
+          ? `<button type="button" data-uname="${u.username}" class="btn-del-user px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-red-100 text-slate-500 hover:text-red-600 text-xs font-semibold">Hapus</button>`
           : `<span class="text-[11px] text-slate-400 italic">Aktif</span>`
         }
       </td>
@@ -68,7 +55,6 @@ function renderUsers() {
 
   if (window.lucide) window.lucide.createIcons();
 
-  // Toggle ikon mata per baris
   tbody.querySelectorAll(".btn-toggle-pw").forEach(btn => {
     btn.addEventListener("click", () => {
       const span = btn.previousElementSibling;
@@ -92,19 +78,13 @@ function renderUsers() {
       const ok = await showConfirm("Hapus Akun?", `Akun "${uname}" tidak akan bisa login lagi.`, "Ya, Hapus");
       if (!ok) return;
 
-      if (!isFirebaseConfigured) {
-        delete usersMap[uname];
-        localStorage.setItem("demo_users", JSON.stringify(usersMap));
-        renderUsers();
-      } else {
-        await remove(ref(db, `users/${uname}`));
-      }
+      removeDemoItem("users", uname);
       showToast(`Akun ${uname} dihapus`);
     });
   });
 }
 
-document.getElementById("form-add-user").addEventListener("submit", async (e) => {
+document.getElementById("form-add-user").addEventListener("submit", (e) => {
   e.preventDefault();
   const uname = document.getElementById("u-username").value.trim().toLowerCase().replace(/\s+/g, "");
   if (usersMap[uname]) {
@@ -120,13 +100,7 @@ document.getElementById("form-add-user").addEventListener("submit", async (e) =>
     createdAt: new Date().toISOString()
   };
 
-  if (!isFirebaseConfigured) {
-    usersMap[uname] = payload;
-    localStorage.setItem("demo_users", JSON.stringify(usersMap));
-    renderUsers();
-  } else {
-    await set(ref(db, `users/${uname}`), payload);
-  }
+  setDemoItem("users", uname, payload);
   e.target.reset();
   showToast(`Akun "${uname}" berhasil dibuat!`);
 });

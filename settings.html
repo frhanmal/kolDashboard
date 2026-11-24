@@ -13,8 +13,7 @@
 </head>
 <body class="bg-[#FFF9FA] text-slate-800 flex min-h-screen">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed h-full shadow-sm shadow-rose-100/30 z-20">
+  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed inset-y-0 left-0 -translate-x-full lg:translate-x-0 h-full shadow-sm shadow-rose-100/30 z-40">
     <div>
       <div class="p-5 border-b border-rose-50 flex items-center gap-3">
         <div class="w-10 h-10 bg-gradient-to-tr from-rose-500 to-pink-400 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-md shadow-rose-200">K</div>
@@ -33,22 +32,20 @@
           <p id="user-name" class="text-xs font-bold text-slate-800">-</p>
           <span id="user-role-badge" class="text-[10px]">-</span>
         </div>
-        <button id="btn-logout" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100/60 rounded-xl transition">
+        <button type="button" id="btn-logout" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100/60 rounded-xl transition">
           <i data-lucide="log-out" class="w-4 h-4"></i>
         </button>
       </div>
     </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="ml-64 flex-1 p-8">
+  <main class="lg:ml-64 flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 min-w-0 w-full">
     <header class="mb-6">
-      <h1 class="text-2xl font-bold text-slate-900 tracking-tight">User & Markup Settings</h1>
-      <p class="text-sm text-slate-500 mt-0.5">Halaman khusus Owner untuk mengelola akun tim dan aturan markup default.</p>
+      <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">User & Markup Settings</h1>
+      <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Halaman khusus Owner untuk mengelola akun tim dan aturan markup default.</p>
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Form Tambah User -->
       <div class="bg-white p-6 rounded-2xl border border-rose-100/80 shadow-sm h-fit">
         <h2 class="text-base font-bold text-slate-800 mb-4">Tambah Akun Tim</h2>
         <form id="form-add-user" class="space-y-3.5">
@@ -81,14 +78,13 @@
         </form>
       </div>
 
-      <!-- Daftar User Aktif -->
       <div class="lg:col-span-2 bg-white rounded-2xl border border-rose-100/80 shadow-sm overflow-hidden">
-        <div class="p-5 border-b border-rose-50 flex items-center justify-between">
+        <div class="p-5 border-b border-rose-50 flex flex-wrap items-center justify-between gap-2">
           <h2 class="text-base font-bold text-slate-800">Daftar Akun Terdaftar</h2>
           <span class="text-xs text-slate-400">Password hanya terlihat oleh Owner</span>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
+          <table class="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr class="bg-rose-50/50 border-b border-rose-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 <th class="py-3 px-4">Nama</th>

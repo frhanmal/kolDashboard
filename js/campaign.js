@@ -1,6 +1,7 @@
-import { initPageLayout, showAlert, showConfirm, showToast } from "./auth.js";
-import { db } from "./firebase-config.js";
-import { ref, onValue, set, update, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  initPageLayout, showAlert, showConfirm, showToast,
+  subscribeDemoCollection, setDemoItem, updateDemoItem, removeDemoItem
+} from "./auth.js";
 
 const user = initPageLayout("campaign", ["owner", "kol_specialist"]);
 const isOwner = user?.role === "owner";
@@ -61,7 +62,7 @@ let emptyPlaceholderEl = document.getElementById("campaign-empty-placeholder");
 if (!emptyPlaceholderEl && tableCardEl) {
   emptyPlaceholderEl = document.createElement("div");
   emptyPlaceholderEl.id = "campaign-empty-placeholder";
-  emptyPlaceholderEl.className = "bg-white rounded-2xl border border-dashed border-rose-200 p-12 text-center space-y-2 shadow-xs";
+  emptyPlaceholderEl.className = "bg-white rounded-2xl border border-dashed border-rose-200 p-8 sm:p-12 text-center space-y-2 shadow-xs";
   emptyPlaceholderEl.innerHTML = `
     <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center mx-auto">
       <i data-lucide="mouse-pointer-click" class="w-6 h-6"></i>
@@ -86,12 +87,12 @@ function calcPublish(nett, markup) {
 }
 
 function initData() {
-  onValue(ref(db, "master_kol"), (snap) => {
-    masterKols = Object.values(snap.val() || {});
+  subscribeDemoCollection("master_kol", (data) => {
+    masterKols = Object.values(data || {});
   });
 
-  onValue(ref(db, "campaigns"), (snap) => {
-    campaigns = snap.val() || {};
+  subscribeDemoCollection("campaigns", (data) => {
+    campaigns = data || {};
     populateCampaignSelector();
     renderTrackingTable();
   });
@@ -102,7 +103,7 @@ function populateCampaignSelector() {
   if (list.length === 0) {
     activeCampaignId = "";
     if (cmpSearchInput) cmpSearchInput.value = "";
-    document.getElementById("campaign-meta").textContent = "Belum ada campaign di Firebase.";
+    document.getElementById("campaign-meta").textContent = "Belum ada campaign tersimpan.";
     return;
   }
 
@@ -112,13 +113,13 @@ function populateCampaignSelector() {
 
   const active = activeCampaignId ? campaigns[activeCampaignId] : null;
   if (cmpSearchInput && document.activeElement !== cmpSearchInput) {
-    cmpSearchInput.value = active ? `${active.name} (${active.brand})` : "";
+    cmpSearchInput.value = active ? `${active.name} (${active.brand || active.client || "-"})` : "";
   }
   if (btnClearCmpSearch) {
     btnClearCmpSearch.classList.toggle("hidden", !cmpSearchInput?.value);
   }
   document.getElementById("campaign-meta").textContent = active
-    ? `Niche: ${active.niche} • Status: ${active.status} • PIC: ${active.pic || "-"}`
+    ? `Niche: ${active.niche || "-"} • Status: ${active.status || "-"} • PIC: ${active.pic || "-"}`
     : `${list.length} campaign tersedia — pilih untuk melihat data`;
 }
 
@@ -128,8 +129,9 @@ function renderCampaignDropdown(query = "") {
   const list = Object.values(campaigns);
   const matches = list.filter(c => {
     if (!q) return true;
+    const brandName = c.brand || c.client || "";
     return (c.name || "").toLowerCase().includes(q) ||
-      (c.brand || "").toLowerCase().includes(q) ||
+      brandName.toLowerCase().includes(q) ||
       (c.niche || "").toLowerCase().includes(q) ||
       (c.id || "").toLowerCase().includes(q);
   });
@@ -139,11 +141,12 @@ function renderCampaignDropdown(query = "") {
   } else {
     cmpDropdown.innerHTML = matches.map(c => {
       const isSelected = c.id === activeCampaignId;
+      const brandName = c.brand || c.client || "-";
       return `
         <button type="button" data-id="${c.id}" class="opt-cmp w-full text-left px-3.5 py-2.5 hover:bg-rose-50 flex items-center justify-between gap-2 transition ${isSelected ? "bg-rose-50/70" : ""}">
           <div>
             <div class="font-bold text-slate-800">${c.name}</div>
-            <div class="text-[11px] text-slate-400">Brand: ${c.brand} • Niche: ${c.niche || "-"}</div>
+            <div class="text-[11px] text-slate-400">Brand: ${brandName} • Niche: ${c.niche || "-"}</div>
           </div>
           <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${isSelected ? "bg-rose-500 text-white" : "bg-rose-50 text-rose-600"} shrink-0">
             ${isSelected ? "Aktif" : "Pilih"}
@@ -210,7 +213,7 @@ function renderTrackingTable() {
     return matchStatus && matchSearch;
   });
 
-  const postedCount = allItems.filter(i => i.status.startsWith("6 -") || i.status.startsWith("7 -") || i.status.startsWith("8 -")).length;
+  const postedCount = allItems.filter(i => (i.status || "").startsWith("6 -") || (i.status || "").startsWith("7 -") || (i.status || "").startsWith("8 -")).length;
   const totalPublish = allItems.reduce((acc, i) => acc + Number(i.publishTotal || 0), 0);
   const totalNett = allItems.reduce((acc, i) => acc + Number(i.nettTotal || 0), 0);
 
@@ -225,18 +228,20 @@ function renderTrackingTable() {
   }
 
   tbody.innerHTML = items.map(item => {
-    const isOvertime = item.status.startsWith("5 -");
-    const isPayment = item.status.startsWith("7 -");
+    const st = item.status || "1 - Sudah di Reach Out";
+    const isOvertime = st.startsWith("5 -");
+    const isPayment = st.startsWith("7 -");
     const rowBg = isOvertime ? "bg-red-50/50" : (isPayment ? "bg-amber-50/40" : "hover:bg-rose-50/30");
 
-    const sowBadges = (item.sow || []).map(s =>
-      `<span class="inline-block w-fit bg-rose-50 text-rose-600 text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap">${SOW_LABELS[s] || s}</span>`
-    ).join("");
+    const sowArr = item.sow || [];
+    const sowBadges = sowArr.length
+      ? sowArr.map(s => `<span class="inline-block w-fit bg-rose-50 text-rose-600 text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap">${SOW_LABELS[s] || s}</span>`).join("")
+      : (item.sowList || []).map(lbl => `<span class="inline-block w-fit bg-rose-50 text-rose-600 text-[10px] font-semibold px-2 py-0.5 rounded-md whitespace-nowrap">${lbl}</span>`).join("");
 
     const margin = Number(item.publishTotal || 0) - Number(item.nettTotal || 0);
 
-    const statusOptions = SOP_STATUSES.map(st =>
-      `<option value="${st}" ${item.status === st ? "selected" : ""}>${st}</option>`
+    const statusOptions = SOP_STATUSES.map(optSt =>
+      `<option value="${optSt}" ${st === optSt ? "selected" : ""}>${optSt}</option>`
     ).join("");
 
     return `
@@ -284,15 +289,22 @@ function renderTrackingTable() {
   }).join("");
 
   tbody.querySelectorAll(".status-select").forEach(sel => {
-    sel.addEventListener("change", async (e) => {
+    sel.addEventListener("change", (e) => {
       const kolId = e.target.dataset.kolid;
       const newStatus = e.target.value;
-      const audit = {
-        status: newStatus,
-        updatedBy: user?.name || "Unknown",
-        updatedAt: new Date().toISOString()
+      const cmp = campaigns[activeCampaignId];
+      if (!cmp?.items?.[kolId]) return;
+
+      const updatedItems = {
+        ...cmp.items,
+        [kolId]: {
+          ...cmp.items[kolId],
+          status: newStatus,
+          updatedBy: user?.name || "Unknown",
+          updatedAt: new Date().toISOString()
+        }
       };
-      await update(ref(db, `campaigns/${activeCampaignId}/items/${kolId}`), audit);
+      updateDemoItem("campaigns", activeCampaignId, { items: updatedItems });
       showToast("Status SOP diperbarui!");
     });
   });
@@ -318,7 +330,8 @@ function renderTrackingTable() {
 
   tbody.querySelectorAll(".btn-post").forEach(btn => {
     btn.addEventListener("click", () => {
-      const item = campaigns[activeCampaignId].items[btn.dataset.post];
+      const item = campaigns[activeCampaignId]?.items?.[btn.dataset.post];
+      if (!item) return;
       document.getElementById("p-item-id").value = item.kolId;
       document.getElementById("p-link").value = item.postLink || "";
       document.getElementById("p-boost").value = item.boostCode || "";
@@ -330,7 +343,11 @@ function renderTrackingTable() {
     btn.addEventListener("click", async () => {
       const ok = await showConfirm("Keluarkan KOL?", "KOL ini akan dihapus dari shortlist campaign ini.", "Ya, Keluarkan");
       if (!ok) return;
-      await remove(ref(db, `campaigns/${activeCampaignId}/items/${btn.dataset.remove}`));
+      const cmp = campaigns[activeCampaignId];
+      if (!cmp?.items) return;
+      const updatedItems = { ...cmp.items };
+      delete updatedItems[btn.dataset.remove];
+      updateDemoItem("campaigns", activeCampaignId, { items: updatedItems });
       showToast("KOL dikeluarkan dari campaign");
     });
   });
@@ -357,10 +374,11 @@ document.getElementById("close-modal-edit-sow")?.addEventListener("click", () =>
 document.getElementById("cancel-modal-edit-sow")?.addEventListener("click", () => toggleModal("modal-edit-sow", false));
 document.querySelectorAll(".esow-check").forEach(c => c.addEventListener("change", updateEditSowPreview));
 
-document.getElementById("form-edit-sow")?.addEventListener("submit", async (e) => {
+document.getElementById("form-edit-sow")?.addEventListener("submit", (e) => {
   e.preventDefault();
   const kolId = document.getElementById("es-kol-id").value;
-  const item = campaigns[activeCampaignId]?.items?.[kolId];
+  const cmp = campaigns[activeCampaignId];
+  const item = cmp?.items?.[kolId];
   if (!item) return;
 
   const checked = Array.from(document.querySelectorAll(".esow-check:checked")).map(c => c.value);
@@ -369,30 +387,41 @@ document.getElementById("form-edit-sow")?.addEventListener("submit", async (e) =
   }
 
   const { nettTotal, publishTotal } = computeRatesForSow(kolId, item, checked);
-  await update(ref(db, `campaigns/${activeCampaignId}/items/${kolId}`), {
-    sow: checked,
-    nettTotal,
-    publishTotal,
-    updatedBy: user?.name || "Unknown",
-    updatedAt: new Date().toISOString()
-  });
+  const updatedItems = {
+    ...cmp.items,
+    [kolId]: {
+      ...item,
+      sow: checked,
+      nettTotal,
+      publishTotal,
+      updatedBy: user?.name || "Unknown",
+      updatedAt: new Date().toISOString()
+    }
+  };
+  updateDemoItem("campaigns", activeCampaignId, { items: updatedItems });
 
   toggleModal("modal-edit-sow", false);
   showToast(`SOW ${item.kolName} diperbarui!`);
 });
 
+const closeCmpBtn = document.getElementById("close-modal-campaign");
+if (closeCmpBtn) {
+  closeCmpBtn.setAttribute("type", "button");
+  closeCmpBtn.addEventListener("click", () => toggleModal("modal-campaign", false));
+}
 document.getElementById("btn-new-campaign").addEventListener("click", () => toggleModal("modal-campaign", true));
-document.getElementById("close-modal-campaign").addEventListener("click", () => toggleModal("modal-campaign", false));
 document.getElementById("cancel-modal-campaign").addEventListener("click", () => toggleModal("modal-campaign", false));
 
-document.getElementById("form-campaign").addEventListener("submit", async (e) => {
+document.getElementById("form-campaign").addEventListener("submit", (e) => {
   e.preventDefault();
   const id = "CMP-" + Date.now().toString().slice(-5);
   const now = new Date().toISOString();
+  const brandVal = document.getElementById("c-brand").value.trim();
   const newCmp = {
     id,
     name: document.getElementById("c-name").value.trim(),
-    brand: document.getElementById("c-brand").value.trim(),
+    brand: brandVal,
+    client: brandVal,
     niche: document.getElementById("c-niche").value,
     pic: user?.name || "PIC",
     status: document.getElementById("c-status").value,
@@ -404,7 +433,7 @@ document.getElementById("form-campaign").addEventListener("submit", async (e) =>
   };
 
   activeCampaignId = id;
-  await set(ref(db, `campaigns/${id}`), newCmp);
+  setDemoItem("campaigns", id, newCmp);
   e.target.reset();
   toggleModal("modal-campaign", false);
   showToast("Campaign baru berhasil dibuat!");
@@ -511,11 +540,15 @@ sKolDropdown?.addEventListener("click", (e) => {
   updateShortlistPreview();
 });
 
-document.getElementById("close-modal-shortlist").addEventListener("click", () => toggleModal("modal-shortlist", false));
+const closeShortlistBtn = document.getElementById("close-modal-shortlist");
+if (closeShortlistBtn) {
+  closeShortlistBtn.setAttribute("type", "button");
+  closeShortlistBtn.addEventListener("click", () => toggleModal("modal-shortlist", false));
+}
 document.getElementById("cancel-modal-shortlist").addEventListener("click", () => toggleModal("modal-shortlist", false));
 document.querySelectorAll(".sow-check").forEach(c => c.addEventListener("change", updateShortlistPreview));
 
-document.getElementById("form-shortlist").addEventListener("submit", async (e) => {
+document.getElementById("form-shortlist").addEventListener("submit", (e) => {
   e.preventDefault();
   const kolId = sKolIdInput.value;
   const kol = masterKols.find(k => k.id === kolId);
@@ -549,29 +582,44 @@ document.getElementById("form-shortlist").addEventListener("submit", async (e) =
     updatedAt: new Date().toISOString()
   };
 
-  await set(ref(db, `campaigns/${activeCampaignId}/items/${kol.id}`), itemData);
+  const cmp = campaigns[activeCampaignId];
+  const updatedItems = { ...(cmp?.items || {}), [kol.id]: itemData };
+  updateDemoItem("campaigns", activeCampaignId, { items: updatedItems });
+
   toggleModal("modal-shortlist", false);
   showToast(`${kol.name} ditambahkan ke campaign!`);
 });
 
-document.getElementById("close-modal-post").addEventListener("click", () => toggleModal("modal-post", false));
+const closePostBtn = document.getElementById("close-modal-post");
+if (closePostBtn) {
+  closePostBtn.setAttribute("type", "button");
+  closePostBtn.addEventListener("click", () => toggleModal("modal-post", false));
+}
 document.getElementById("cancel-modal-post").addEventListener("click", () => toggleModal("modal-post", false));
 
-document.getElementById("form-post").addEventListener("submit", async (e) => {
+document.getElementById("form-post").addEventListener("submit", (e) => {
   e.preventDefault();
   const kolId = document.getElementById("p-item-id").value;
   const postLink = document.getElementById("p-link").value.trim();
   const boostCode = document.getElementById("p-boost").value.trim();
   const now = new Date().toISOString();
 
-  const payload = {
+  const cmp = campaigns[activeCampaignId];
+  const existingItem = cmp?.items?.[kolId];
+  if (!existingItem) return;
+
+  const updatedItem = {
+    ...existingItem,
     postLink,
     boostCode,
     updatedBy: user?.name || "Unknown",
     updatedAt: now
   };
-  if (postLink) payload.status = "6 - Sudah Post Content";
-  await update(ref(db, `campaigns/${activeCampaignId}/items/${kolId}`), payload);
+  if (postLink) updatedItem.status = "6 - Sudah Post Content";
+
+  updateDemoItem("campaigns", activeCampaignId, {
+    items: { ...cmp.items, [kolId]: updatedItem }
+  });
 
   toggleModal("modal-post", false);
   showToast("Link konten & boost code disimpan!");
@@ -585,12 +633,13 @@ document.getElementById("btn-export-proposal").addEventListener("click", () => {
 
   const today = new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
   const totalPublish = items.reduce((acc, i) => acc + Number(i.publishTotal || 0), 0);
+  const brandName = active.brand || active.client || "-";
 
   const sheetData = [
     ["PROPOSAL KOL CAMPAIGN"],
     ["Campaign", active.name],
-    ["Brand / Klien", active.brand],
-    ["Niche", active.niche],
+    ["Brand / Klien", brandName],
+    ["Niche", active.niche || "-"],
     ["Tanggal Export", today],
     [],
     ["No", "Nama KOL", "Instagram", "TikTok", "Deliverables (SOW)", "Publish Rate (IDR)", "Status"]
@@ -602,7 +651,7 @@ document.getElementById("btn-export-proposal").addEventListener("click", () => {
       item.kolName,
       item.ig ? `@${item.ig}` : "-",
       item.tiktok ? `@${item.tiktok}` : "-",
-      (item.sow || []).map(s => SOW_LABELS[s] || s).join(" + "),
+      (item.sow || []).map(s => SOW_LABELS[s] || s).join(" + ") || (item.sowList || []).join(" + "),
       Number(item.publishTotal || 0),
       item.status
     ]);
@@ -639,7 +688,7 @@ document.getElementById("btn-export-proposal").addEventListener("click", () => {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Proposal KOL");
 
-  const safeName = active.brand.replace(/[^a-zA-Z0-9]/g, "_");
+  const safeName = brandName.replace(/[^a-zA-Z0-9]/g, "_");
   XLSX.writeFile(wb, `Proposal_${safeName}.xlsx`);
   showToast("File Proposal .xlsx berhasil diunduh!");
 });

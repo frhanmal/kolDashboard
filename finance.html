@@ -15,8 +15,7 @@
 </head>
 <body class="bg-[#FFF9FA] text-slate-800 flex min-h-screen">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed h-full shadow-sm shadow-rose-100/30 z-20">
+  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed inset-y-0 left-0 -translate-x-full lg:translate-x-0 h-full shadow-sm shadow-rose-100/30 z-40">
     <div>
       <div class="p-5 border-b border-rose-50 flex items-center gap-3">
         <div class="w-10 h-10 bg-gradient-to-tr from-rose-500 to-pink-400 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-md shadow-rose-200">K</div>
@@ -35,19 +34,18 @@
           <p id="user-name" class="text-xs font-bold text-slate-800">-</p>
           <span id="user-role-badge" class="text-[10px]">-</span>
         </div>
-        <button id="btn-logout" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100/60 rounded-xl transition">
+        <button type="button" id="btn-logout" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100/60 rounded-xl transition">
           <i data-lucide="log-out" class="w-4 h-4"></i>
         </button>
       </div>
     </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="ml-64 flex-1 p-8">
+  <main class="lg:ml-64 flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 min-w-0 w-full">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Finance & Payment Queue</h1>
-        <p class="text-sm text-slate-500 mt-0.5">Otomatis menarik seluruh KOL berstatus <strong>7 - Butuh Payment</strong> dari semua campaign.</p>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Finance & Payment Queue</h1>
+        <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Otomatis menarik seluruh KOL berstatus <strong>7 - Butuh Payment</strong> dari semua campaign.</p>
       </div>
       <button id="btn-export-finance" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition">
         <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
@@ -55,8 +53,7 @@
       </button>
     </header>
 
-    <!-- Summary Cards Finance -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 mb-6">
       <div class="bg-white p-5 rounded-2xl border border-amber-200/80 shadow-sm">
         <p class="text-xs font-semibold text-amber-600">Total Tagihan Belum Dibayar (Unpaid)</p>
         <h3 id="fin-unpaid-total" class="text-2xl font-extrabold text-amber-600 mt-2">Rp 0</h3>
@@ -79,10 +76,9 @@
       </div>
     </div>
 
-    <!-- Tabel Antrean Payment -->
     <div class="bg-white rounded-2xl border border-rose-100/80 shadow-sm shadow-rose-100/30 overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
           <thead>
             <tr class="bg-rose-50/50 border-b border-rose-100 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               <th class="py-3.5 px-4">Campaign / Brand</th>
@@ -94,14 +90,12 @@
             </tr>
           </thead>
           <tbody id="finance-table-body" class="divide-y divide-rose-50 text-sm">
-            <!-- Diisi finance.js -->
           </tbody>
         </table>
       </div>
     </div>
   </main>
 
-  <!-- Modal Konfirmasi Pembayaran -->
   <div id="modal-pay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-rose-100 overflow-hidden">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
@@ -116,18 +110,15 @@
       <form id="form-pay" class="p-5 space-y-4">
         <input type="hidden" id="pay-cmp-id" />
         <input type="hidden" id="pay-kol-id" />
-
         <div class="bg-rose-50/70 rounded-xl p-3.5 text-center">
           <p class="text-[11px] text-slate-500 font-semibold">Nominal yang Ditransfer (Nett KOL)</p>
           <p id="pay-amount" class="text-2xl font-extrabold text-rose-600 mt-1">Rp 0</p>
         </div>
-
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor Rekening / Bank / Catatan Transfer *</label>
           <input type="text" id="pay-note" required placeholder="Contoh: BCA 12345678 a.n Karin - Ref #9981"
             class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 outline-none" />
         </div>
-
         <div>
           <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Foto Bukti Transfer (Opsional)</label>
           <input type="file" id="pay-proof-file" accept="image/*"
@@ -140,7 +131,6 @@
             </button>
           </div>
         </div>
-
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" id="cancel-modal-pay" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
           <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow-md shadow-emerald-200 transition">
@@ -151,7 +141,6 @@
     </div>
   </div>
 
-  <!-- Modal Preview Foto Bukti Transfer -->
   <div id="modal-proof-preview" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-rose-100 overflow-hidden">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">

@@ -14,8 +14,7 @@
 </head>
 <body class="bg-[#FFF9FA] text-slate-800 flex min-h-screen">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed h-full shadow-sm shadow-rose-100/30 z-20">
+  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed inset-y-0 left-0 -translate-x-full lg:translate-x-0 h-full shadow-sm shadow-rose-100/30 z-40">
     <div>
       <div class="p-5 border-b border-rose-50 flex items-center gap-3">
         <div class="w-10 h-10 bg-gradient-to-tr from-rose-500 to-pink-400 text-white rounded-xl flex items-center justify-center font-bold text-lg shadow-md shadow-rose-200">K</div>
@@ -34,18 +33,16 @@
           <p id="user-name" class="text-xs font-bold text-slate-800">-</p>
           <span id="user-role-badge" class="text-[10px]">-</span>
         </div>
-        <button id="btn-logout" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100/60 rounded-xl transition">
+        <button type="button" id="btn-logout" title="Logout" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100/60 rounded-xl transition">
           <i data-lucide="log-out" class="w-4 h-4"></i>
         </button>
       </div>
     </div>
   </aside>
 
-  <!-- Main Content -->
-  <main class="ml-64 flex-1 p-7">
-    <!-- Top Search Bar -->
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-      <div class="relative flex-1 max-w-md">
+  <main class="lg:ml-64 flex-1 p-4 sm:p-6 lg:p-7 pt-16 lg:pt-7 min-w-0 w-full">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div class="relative flex-1 min-w-[220px] max-w-md">
         <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
         <input type="text" id="global-search" placeholder="Cari talent, campaign, klien, lead..."
           class="w-full pl-10 pr-4 py-2 rounded-full border border-rose-200/80 bg-white text-xs focus:ring-2 focus:ring-rose-400 outline-none shadow-xs" />
@@ -58,27 +55,24 @@
       </div>
     </div>
 
-    <!-- Header & Quick Action Buttons -->
-    <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <header class="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Overview</h1>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Overview</h1>
         <p class="text-xs text-slate-500 mt-0.5">Ringkasan operasional KOL & Affiliate Management OS.</p>
       </div>
-      <div class="flex items-center gap-2.5">
-        <a href="campaign.html" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-sm transition">
+      <div class="flex flex-wrap items-center gap-2">
+        <a href="campaign.html" class="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl shadow-sm transition">
           <i data-lucide="megaphone" class="w-3.5 h-3.5"></i>
           <span>Campaign</span>
         </a>
-        <a href="leads.html" class="inline-flex items-center gap-1.5 bg-white hover:bg-rose-50 text-slate-700 border border-rose-200 text-xs font-semibold px-4 py-2.5 rounded-xl transition">
+        <a href="leads.html" class="inline-flex items-center gap-1.5 bg-white hover:bg-rose-50 text-slate-700 border border-rose-200 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition">
           <i data-lucide="plus" class="w-3.5 h-3.5 text-rose-500"></i>
           <span>Form Pendaftaran</span>
         </a>
       </div>
     </header>
 
-    <!-- Grid KPI Cards (Pendapatan Hanya Muncul untuk Owner) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
-      <!-- 1. Lead Baru -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-7">
       <div data-card="leads" class="kpi-card cursor-pointer bg-white p-5 rounded-2xl border border-rose-100/80 shadow-sm hover:border-rose-300 transition">
         <div class="flex items-center justify-between">
           <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Lead Baru</p>
@@ -88,7 +82,6 @@
         <p class="text-[11px] text-slate-400 mt-1" id="kpi-leads-sub">Menunggu review masuk Master KOL</p>
       </div>
 
-      <!-- 2. Campaign Aktif -->
       <div data-card="campaign" class="kpi-card cursor-pointer bg-white p-5 rounded-2xl border border-rose-100/80 shadow-sm hover:border-rose-300 transition">
         <div class="flex items-center justify-between">
           <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Campaign Aktif</p>
@@ -98,7 +91,6 @@
         <p class="text-[11px] text-slate-400 mt-1">Klik untuk lihat rincian campaign</p>
       </div>
 
-      <!-- 3. Total KOL -->
       <div data-card="kol" class="kpi-card cursor-pointer bg-white p-5 rounded-2xl border border-rose-100/80 shadow-sm hover:border-rose-300 transition">
         <div class="flex items-center justify-between">
           <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total KOL</p>
@@ -108,7 +100,6 @@
         <p class="text-[11px] text-emerald-600 font-medium mt-1">Database unik terverifikasi</p>
       </div>
 
-      <!-- 4. Menunggu Review / Overtime -->
       <div data-card="overtime" class="kpi-card cursor-pointer bg-white p-5 rounded-2xl border border-rose-100/80 shadow-sm hover:border-red-300 transition">
         <div class="flex items-center justify-between">
           <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Overtime / Butuh Follow-Up</p>
@@ -118,7 +109,6 @@
         <p class="text-[11px] text-slate-400 mt-1">Status 5 - Waiting Content</p>
       </div>
 
-      <!-- 5. PENDAPATAN BULAN INI (KHUSUS OWNER ONLY) -->
       <div id="owner-revenue-card" class="hidden bg-gradient-to-br from-rose-500 to-pink-500 text-white p-5 rounded-2xl shadow-md shadow-rose-200/70">
         <div class="flex items-center justify-between">
           <p class="text-[11px] font-bold uppercase tracking-wider text-rose-100">Pendapatan / Margin (Owner)</p>
@@ -128,7 +118,6 @@
         <p class="text-[11px] text-rose-100 mt-1" id="kpi-revenue-sub">Total Publish Klien: Rp 0</p>
       </div>
 
-      <!-- 6. Tagihan Belum Lunas (Unpaid KOL) -->
       <div data-card="payment" class="kpi-card cursor-pointer bg-white p-5 rounded-2xl border border-rose-100/80 shadow-sm hover:border-amber-300 transition">
         <div class="flex items-center justify-between">
           <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Tagihan Belum Lunas</p>
@@ -139,9 +128,7 @@
       </div>
     </div>
 
-    <!-- Bottom Grid: Pendaftar Talent Terbaru + Aksi Cepat -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-7">
-      <!-- Pendaftar Talent Terbaru -->
       <div class="lg:col-span-2 bg-white rounded-2xl border border-rose-100/80 shadow-sm p-5">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-sm font-bold text-slate-800">Pendaftar Talent / Lead Terbaru</h3>
@@ -150,7 +137,6 @@
         <div id="recent-leads-list" class="divide-y divide-rose-50 text-xs"></div>
       </div>
 
-      <!-- Aksi Cepat -->
       <div class="bg-white rounded-2xl border border-rose-100/80 shadow-sm p-5 space-y-2.5">
         <h3 class="text-sm font-bold text-slate-800 mb-3">Aksi Cepat</h3>
         <a href="leads.html" class="flex items-center justify-between p-3 rounded-xl bg-rose-50/50 hover:bg-rose-100/70 text-xs font-semibold text-slate-700 transition">
@@ -172,10 +158,9 @@
       </div>
     </div>
 
-    <!-- Grafik Analitik (Klik Bagian Grafik untuk Lihat Detail) -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="bg-white p-5 rounded-2xl border border-rose-100/80 shadow-sm">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h3 class="text-sm font-bold text-slate-800">Distribusi Master KOL per Niche</h3>
           <span class="text-[11px] font-semibold text-rose-500">Klik irisan untuk lihat KOL</span>
         </div>
@@ -183,7 +168,7 @@
       </div>
 
       <div class="bg-white p-5 rounded-2xl border border-rose-100/80 shadow-sm">
-        <div class="flex items-center justify-between mb-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h3 class="text-sm font-bold text-slate-800">Progress Status KOL di Seluruh Campaign</h3>
           <span class="text-[11px] font-semibold text-rose-500">Klik batang untuk lihat data</span>
         </div>
@@ -192,7 +177,6 @@
     </div>
   </main>
 
-  <!-- Modal Detail KPI & Grafik -->
   <div id="modal-kpi" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl border border-rose-100 overflow-hidden">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
@@ -204,9 +188,7 @@
   </div>
 
   <script type="module">
-    import { initPageLayout } from "./js/auth.js";
-    import { db } from "./js/firebase-config.js";
-    import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { initPageLayout, subscribeDemoCollection } from "./js/auth.js";
 
     const user = initPageLayout("dashboard", ["owner", "kol_specialist", "finance"]);
     const isOwner = user?.role === "owner";
@@ -301,16 +283,16 @@
       const topLeads = leads.slice(0, 4);
       recentEl.innerHTML = topLeads.length
         ? topLeads.map(l => `
-            <div class="py-3 flex items-center justify-between">
-              <div>
-                <p class="font-bold text-slate-800">${l.name}</p>
-                <p class="text-[11px] text-slate-400">TT: @${l.tiktok || "-"} • GMV: ${l.gmv || "-"} • WA: ${l.wa}</p>
+            <div class="py-3 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <p class="font-bold text-slate-800 truncate">${l.name}</p>
+                <p class="text-[11px] text-slate-400 truncate">TT: @${l.tiktok || "-"} • GMV: ${l.gmv || "-"} • WA: ${l.wa}</p>
               </div>
-              <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full ${l.status === "Approved" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}">
+              <span class="shrink-0 text-[10px] font-bold px-2.5 py-0.5 rounded-full ${l.status === "Approved" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}">
                 ${(l.status || "PENDING").toUpperCase()}
               </span>
             </div>`).join("")
-        : `<p class="py-6 text-center text-slate-400">Belum ada pendaftar masuk di Firebase.</p>`;
+        : `<p class="py-6 text-center text-slate-400">Belum ada pendaftar masuk.</p>`;
 
       const nicheCounts = {};
       kols.forEach(k => {
@@ -334,7 +316,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { position: "right" } },
+          plugins: { legend: { position: "bottom" } },
           onClick: (_evt, elements) => {
             if (!elements || elements.length === 0) return;
             const idx = elements[0].index;
@@ -393,7 +375,6 @@
                       <div>
                         <p class="font-bold text-slate-800">${r.kolName} <span class="text-xs font-normal text-rose-500">(${r.cmpName})</span></p>
                         <p class="text-xs text-slate-500">Status SOP: ${r.status} • WA: ${r.wa || "-"}</p>
-                        ${r.updatedBy ? `<p class="text-[11px] text-slate-400">Update: ${r.updatedBy}</p>` : ""}
                       </div>
                       <a href="campaign.html" class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 text-xs font-semibold hover:bg-rose-100 shrink-0">Kelola</a>
                     </div>`).join("")
@@ -455,9 +436,9 @@
       if (e.target.id === "modal-kpi") { modalKpi.classList.add("hidden"); modalKpi.classList.remove("flex"); }
     });
 
-    onValue(ref(db, "master_kol"), s => { state.kols = Object.values(s.val() || {}); renderAll(); });
-    onValue(ref(db, "campaigns"), s => { state.cmps = Object.values(s.val() || {}); renderAll(); });
-    onValue(ref(db, "leads"), s => { state.leads = Object.values(s.val() || {}); renderAll(); });
+    subscribeDemoCollection("master_kol", data => { state.kols = Object.values(data || {}); renderAll(); });
+    subscribeDemoCollection("campaigns", data => { state.cmps = Object.values(data || {}); renderAll(); });
+    subscribeDemoCollection("leads", data => { state.leads = Object.values(data || {}); renderAll(); });
   </script>
 </body>
 </html>

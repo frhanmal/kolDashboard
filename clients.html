@@ -10,7 +10,7 @@
   <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
 </head>
 <body class="bg-[#FFF9FA] text-slate-800 flex min-h-screen">
-  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed h-full z-20">
+  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed inset-y-0 left-0 -translate-x-full lg:translate-x-0 h-full z-40">
     <div>
       <div class="p-5 border-b border-rose-50 flex items-center gap-3">
         <div class="w-10 h-10 bg-gradient-to-tr from-rose-500 to-pink-400 text-white rounded-xl flex items-center justify-center font-bold text-lg">K</div>
@@ -22,20 +22,19 @@
       <div id="db-status" class="flex items-center gap-2 text-[11px] text-slate-500"></div>
       <div class="flex items-center justify-between">
         <div><p id="user-name" class="text-xs font-bold">-</p><span id="user-role-badge" class="text-[10px]">-</span></div>
-        <button id="btn-logout" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+        <button type="button" id="btn-logout" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl"><i data-lucide="log-out" class="w-4 h-4"></i></button>
       </div>
     </div>
   </aside>
 
-  <main class="ml-64 flex-1 p-8">
+  <main class="lg:ml-64 flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 min-w-0 w-full">
     <header class="mb-6">
-      <h1 class="text-2xl font-bold text-slate-900">Client Management</h1>
+      <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Client Management</h1>
       <p class="text-xs text-slate-500 mt-0.5">Klik kartu Brand/Klien untuk melihat daftar campaign dan nama-nama KOL yang terlibat.</p>
     </header>
     <div id="client-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
   </main>
 
-  <!-- Modal Detail Klien (Campaign & Nama-Nama KOL) -->
   <div id="modal-client-detail" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl border border-rose-100 overflow-hidden">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
@@ -52,9 +51,7 @@
   </div>
 
   <script type="module">
-    import { initPageLayout } from "./js/auth.js";
-    import { db } from "./js/firebase-config.js";
-    import { ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { initPageLayout, subscribeDemoCollection } from "./js/auth.js";
 
     const user = initPageLayout("clients", ["owner", "kol_specialist"]);
     const isOwner = user?.role === "owner";
@@ -124,7 +121,7 @@
     function render(cmps) {
       const byBrand = {};
       Object.values(cmps || {}).forEach(c => {
-        const b = c.brand || "Umum";
+        const b = c.brand || c.client || "Umum";
         if (!byBrand[b]) {
           byBrand[b] = { brand: b, count: 0, totalKol: 0, publish: 0, margin: 0, campaigns: [] };
         }
@@ -156,7 +153,7 @@
                 ${isOwner ? `<p class="text-emerald-600 font-bold mt-0.5">Estimasi Margin (Owner): ${formatRp(b.margin)}</p>` : ""}
               </div>
             </div>`).join("")
-        : `<p class="text-sm text-slate-400">Belum ada data klien di Firebase.</p>`;
+        : `<p class="text-sm text-slate-400">Belum ada data klien.</p>`;
 
       gridEl.querySelectorAll(".client-card").forEach(card => {
         card.addEventListener("click", () => {
@@ -165,7 +162,7 @@
       });
     }
 
-    onValue(ref(db, "campaigns"), s => render(s.val() || {}));
+    subscribeDemoCollection("campaigns", data => render(data || {}));
   </script>
 </body>
 </html>

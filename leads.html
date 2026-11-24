@@ -14,7 +14,7 @@
   </style>
 </head>
 <body class="bg-[#FFF9FA] text-slate-800 flex min-h-screen">
-  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed h-full z-20">
+  <aside class="w-64 bg-white border-r border-rose-100 flex flex-col justify-between fixed inset-y-0 left-0 -translate-x-full lg:translate-x-0 h-full z-40">
     <div>
       <div class="p-5 border-b border-rose-50 flex items-center gap-3">
         <div class="w-10 h-10 bg-gradient-to-tr from-rose-500 to-pink-400 text-white rounded-xl flex items-center justify-center font-bold text-lg">K</div>
@@ -26,35 +26,34 @@
       <div id="db-status" class="flex items-center gap-2 text-[11px] text-slate-500"></div>
       <div class="flex items-center justify-between">
         <div><p id="user-name" class="text-xs font-bold">-</p><span id="user-role-badge" class="text-[10px]">-</span></div>
-        <button id="btn-logout" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+        <button type="button" id="btn-logout" class="p-2 text-slate-400 hover:text-rose-600 rounded-xl"><i data-lucide="log-out" class="w-4 h-4"></i></button>
       </div>
     </div>
   </aside>
 
-  <main class="ml-64 flex-1 p-8 min-w-0">
+  <main class="lg:ml-64 flex-1 p-4 sm:p-6 lg:p-8 pt-16 lg:pt-8 min-w-0 w-full">
     <header class="mb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-slate-900">Lead Masuk & Pendaftar Form</h1>
+        <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Lead Masuk & Pendaftar Form</h1>
         <p class="text-xs text-slate-500 mt-0.5">Klik baris pendaftar untuk melihat preview detail lengkap, atau klik Approve untuk memasukkan ke Talent Database.</p>
       </div>
       <div class="flex flex-wrap items-center gap-2.5">
-        <label class="cursor-pointer inline-flex items-center gap-2 bg-white hover:bg-rose-50 text-slate-700 border border-rose-200 text-xs font-semibold px-4 py-2.5 rounded-xl transition">
+        <label class="cursor-pointer inline-flex items-center gap-2 bg-white hover:bg-rose-50 text-slate-700 border border-rose-200 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition">
           <i data-lucide="file-up" class="w-4 h-4 text-rose-500"></i>
-          <span>Import Excel/CSV Sheet</span>
+          <span>Import Excel/CSV</span>
           <input type="file" id="import-sheet-file" accept=".xlsx,.xls,.csv" class="hidden" />
         </label>
-        <button id="btn-add-lead" class="inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-md shadow-rose-200 transition">
+        <button id="btn-add-lead" class="inline-flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl shadow-md shadow-rose-200 transition">
           <i data-lucide="plus" class="w-4 h-4"></i><span>Input Lead Manual</span>
         </button>
       </div>
     </header>
 
-    <!-- Search & Filter Bar (Freeze di Atas Saat Di-scroll) -->
-    <div class="sticky top-0 z-30 bg-[#FFF9FA]/95 backdrop-blur-xs pt-2 pb-4 mb-2">
-      <div class="bg-white p-4 rounded-2xl border border-rose-100 shadow-md shadow-rose-100/50 flex flex-wrap items-center gap-3">
-        <div class="relative flex-1 min-w-[240px]">
+    <div class="sticky top-0 z-20 bg-[#FFF9FA]/95 backdrop-blur-xs pt-2 pb-4 mb-2">
+      <div class="bg-white p-3.5 sm:p-4 rounded-2xl border border-rose-100 shadow-md shadow-rose-100/50 flex flex-wrap items-center gap-2.5">
+        <div class="relative flex-1 min-w-[200px]">
           <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
-          <input type="text" id="search-lead" placeholder="Cari nama lengkap, username TikTok, WA, atau alamat..."
+          <input type="text" id="search-lead" placeholder="Cari nama, username TikTok, WA, atau alamat..."
             class="w-full pl-10 pr-4 py-2 rounded-xl border border-rose-200/70 bg-rose-50/20 text-xs focus:bg-white focus:ring-2 focus:ring-rose-400 outline-none" />
         </div>
         <select id="filter-lead-status" class="px-3.5 py-2 rounded-xl border border-rose-200/70 bg-white text-xs text-slate-600 outline-none">
@@ -68,7 +67,6 @@
       </div>
     </div>
 
-    <!-- Tabel Lead -->
     <div class="bg-white rounded-2xl border border-rose-100 shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse whitespace-nowrap">
@@ -84,7 +82,7 @@
               <th class="py-2.5 px-2.5 text-center">2-4 VT</th>
               <th class="py-2.5 px-2.5 text-center">Boost 180d</th>
               <th class="py-2.5 px-2.5">Status</th>
-              <th class="py-2.5 px-2.5 text-right sticky right-0 z-10 bg-rose-50/95 shadow-[-4px_0_8px_-4px_rgba(15,23,42,0.08)]">Aksi</th>
+              <th class="py-2.5 px-2.5 text-right lg:sticky lg:right-0 z-10 bg-rose-50/95">Aksi</th>
             </tr>
           </thead>
           <tbody id="leads-tbody" class="divide-y divide-rose-50 text-xs"></tbody>
@@ -92,15 +90,13 @@
       </div>
     </div>
 
-    <!-- Tombol Kembali ke Atas -->
     <button type="button" id="btn-scroll-top" title="Kembali ke atas"
-      class="hidden fixed bottom-6 right-6 z-40 items-center gap-1.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold px-3.5 py-2.5 rounded-full shadow-lg shadow-rose-300/60 transition">
+      class="hidden fixed bottom-6 right-6 z-30 items-center gap-1.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold px-3.5 py-2.5 rounded-full shadow-lg shadow-rose-300/60 transition">
       <i data-lucide="arrow-up" class="w-4 h-4"></i>
       <span>Ke Atas</span>
     </button>
   </main>
 
-  <!-- Modal 1: Preview Detail Lengkap Pendaftar -->
   <div id="modal-lead-detail" class="fixed inset-0 bg-slate-900/45 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
     <div class="bg-white rounded-3xl w-full max-w-xl max-h-[88vh] flex flex-col shadow-2xl border border-rose-100 overflow-hidden">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
@@ -117,9 +113,8 @@
     </div>
   </div>
 
-  <!-- Modal 2: Input Lead Manual -->
   <div id="modal-lead" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl border border-rose-100">
+    <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4 shadow-2xl border border-rose-100">
       <div class="flex items-center justify-between border-b border-rose-100 pb-3">
         <div>
           <h2 class="text-base font-bold text-slate-800">Input Lead / Talent Manual</h2>
@@ -290,7 +285,7 @@
         approvedAt: now
       });
       closeDetailModal();
-      showToast(`${newKol.name} di-approve (Demo Mode)!`);
+      showToast(`${newKol.name} di-approve!`);
     }
 
     async function deleteLeadById(leadId) {
@@ -360,17 +355,17 @@
           <p class="text-slate-800 leading-relaxed mt-1 whitespace-pre-line">${lead.address || "-"}</p>
         </div>
 
-        <div class="grid grid-cols-3 gap-2.5 text-center">
-          <div class="p-3 rounded-2xl border border-rose-100 bg-white">
-            <p class="text-[10px] text-slate-400 font-semibold mb-1">SOW Sesuai Timeline</p>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="p-2.5 rounded-2xl border border-rose-100 bg-white">
+            <p class="text-[10px] text-slate-400 font-semibold mb-1">SOW Timeline</p>
             ${yesBadge(lead.sowTimeline)}
           </div>
-          <div class="p-3 rounded-2xl border border-rose-100 bg-white">
-            <p class="text-[10px] text-slate-400 font-semibold mb-1">Membuat 2-4 VT</p>
+          <div class="p-2.5 rounded-2xl border border-rose-100 bg-white">
+            <p class="text-[10px] text-slate-400 font-semibold mb-1">2-4 VT</p>
             ${yesBadge(lead.makeVt)}
           </div>
-          <div class="p-3 rounded-2xl border border-rose-100 bg-white">
-            <p class="text-[10px] text-slate-400 font-semibold mb-1">Boostcode 180 Days</p>
+          <div class="p-2.5 rounded-2xl border border-rose-100 bg-white">
+            <p class="text-[10px] text-slate-400 font-semibold mb-1">Boost 180d</p>
             ${yesBadge(lead.boostCode180)}
           </div>
         </div>
@@ -441,7 +436,7 @@
               </span>
               ${isApproved ? `<div class="text-[10px] text-slate-500 mt-0.5 truncate max-w-[120px]">By: <strong class="text-slate-700">${l.approvedBy || "System"}</strong></div>` : ""}
             </td>
-            <td class="py-2.5 px-2.5 text-right sticky right-0 z-10 bg-white group-hover:bg-[#fff5f7] shadow-[-4px_0_8px_-4px_rgba(15,23,42,0.08)] space-x-1">
+            <td class="py-2.5 px-2.5 text-right lg:sticky lg:right-0 z-10 bg-white group-hover:bg-[#fff5f7] space-x-1">
               ${!isApproved
                 ? `<button type="button" data-id="${l.id}" class="btn-approve px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-semibold shadow-xs transition">Approve</button>
                    <button type="button" data-del="${l.id}" class="btn-del-lead px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-red-100 text-slate-500 hover:text-red-600 text-[11px] font-semibold transition">Hapus</button>`
@@ -519,7 +514,7 @@
       e.target.reset();
       delete document.getElementById("l-tiktok-link").dataset.manual;
       closeLeadModal();
-      showToast("Lead baru berhasil disimpan (Demo Mode)!");
+      showToast("Lead baru berhasil disimpan!");
     });
 
     function getColVal(rowObj, candidateKeys, fallbackIndex = -1) {
