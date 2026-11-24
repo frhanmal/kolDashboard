@@ -124,32 +124,29 @@ const DEMO_SEED = {
     "CMP-1001": {
       id: "CMP-1001",
       name: "Glow Serum Launch Q4",
-      client: "GlowSkin Indonesia",
-      status: "Active",
-      budget: 45000000,
-      kolCount: 8,
-      startDate: "2026-11-01",
-      endDate: "2026-11-30"
-    },
-    "CMP-1002": {
-      id: "CMP-1002",
-      name: "12.12 Mega Affiliate Push",
-      client: "Kopi Nusantara",
-      status: "Planning",
-      budget: 28000000,
-      kolCount: 5,
-      startDate: "2026-12-01",
-      endDate: "2026-12-15"
+      brand: "GlowSkin Indonesia",
+      niche: "Beauty",
+      status: "4 - Approved, Campaign Onprocess",
+      items: {
+        "KOL-100001": {
+          kolId: "KOL-100001",
+          kolName: "Alya Rahmadhani",
+          ig: "alyarahma.id",
+          tiktok: "alyarahma_",
+          wa: "6285712349876",
+          sowList: ["1x TikTok Video", "Add-on Boost/Ads Code"],
+          publishTotal: 4875000,
+          nettTotal: 3750000,
+          status: "7 - Butuh Payment",
+          paymentStatus: "Unpaid"
+        }
+      }
     }
   },
   clients: {
-    "CL-101": { id: "CL-101", name: "GlowSkin Indonesia", pic: "Ibu Sinta", phone: "628111222333", industry: "Skincare & Beauty" },
-    "CL-102": { id: "CL-102", name: "Kopi Nusantara", pic: "Pak Dimas", phone: "628122333444", industry: "Food & Beverage" }
+    "CL-101": { id: "CL-101", name: "GlowSkin Indonesia", pic: "Ibu Sinta", phone: "628111222333", industry: "Skincare & Beauty" }
   },
-  finance: {
-    "INV-2026-01": { id: "INV-2026-01", client: "GlowSkin Indonesia", campaign: "Glow Serum Launch Q4", amount: 45000000, status: "Paid", dueDate: "2026-11-20" },
-    "INV-2026-02": { id: "INV-2026-02", client: "Kopi Nusantara", campaign: "12.12 Mega Affiliate Push", amount: 28000000, status: "Unpaid", dueDate: "2026-12-05" }
-  },
+  finance: {},
   users: DEFAULT_USERS
 };
 
@@ -304,7 +301,7 @@ export function getCurrentUser({ allowAutoDemo = true } = {}) {
 }
 
 export async function logoutUser() {
-  const ok = await showConfirm("Keluar dari Dashboard?", "Sesi demo akan diakhiri.", "Ya, Logout");
+  const ok = await showConfirm("Keluar dari Dashboard?", "Sesi akan diakhiri.", "Ya, Logout");
   if (!ok) return;
 
   localStorage.removeItem(SESSION_KEY);
@@ -313,58 +310,138 @@ export async function logoutUser() {
   window.location.replace("index.html");
 }
 
-function setupCollapsibleSidebar() {
+function setupResponsiveSidebar() {
   const aside = document.querySelector("aside");
   const main = document.querySelector("main");
   if (!aside || !main) return;
 
-  aside.classList.add("transition-transform", "duration-300");
-  main.classList.add("transition-all", "duration-300");
+  aside.classList.add("transition-transform", "duration-300", "z-40");
+  main.classList.add("transition-all", "duration-300", "min-w-0", "w-full");
 
+  // Backdrop gelap saat sidebar dibuka di layar HP (< 1024px)
+  let backdrop = document.getElementById("sidebar-backdrop");
+  if (!backdrop) {
+    backdrop = document.createElement("div");
+    backdrop.id = "sidebar-backdrop";
+    backdrop.className = "fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-30 hidden lg:hidden transition-opacity";
+    document.body.appendChild(backdrop);
+  }
+  backdrop.onclick = () => setSidebarOpen(false);
+
+  // Tombol tutup di header sidebar
   const sidebarHeader = aside.querySelector(".border-b");
-  if (sidebarHeader && !document.getElementById("btn-collapse-sidebar")) {
-    const closeBtn = document.createElement("button");
+  let closeBtn = document.getElementById("btn-collapse-sidebar");
+  if (sidebarHeader && !closeBtn) {
+    closeBtn = document.createElement("button");
     closeBtn.type = "button";
     closeBtn.id = "btn-collapse-sidebar";
     closeBtn.title = "Sembunyikan Menu";
     closeBtn.className = "ml-auto p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition";
     closeBtn.innerHTML = `<i data-lucide="panel-left-close" class="w-4 h-4"></i>`;
     sidebarHeader.appendChild(closeBtn);
-    closeBtn.addEventListener("click", () => setSidebarCollapsed(true));
+  }
+  if (closeBtn) closeBtn.onclick = () => setSidebarOpen(false);
+
+  // Mobile top bar (otomatis dibuat jika belum ada di HTML)
+  let mobileHeader = document.getElementById("mobile-top-header");
+  if (!mobileHeader) {
+    mobileHeader = document.createElement("header");
+    mobileHeader.id = "mobile-top-header";
+    mobileHeader.className = "lg:hidden fixed top-0 inset-x-0 h-14 bg-white/95 backdrop-blur-md border-b border-rose-100 px-3.5 flex items-center justify-between z-30 shadow-xs";
+    mobileHeader.innerHTML = `
+      <button type="button" id="btn-mobile-menu" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200/70 transition">
+        <i data-lucide="menu" class="w-4 h-4"></i>
+        <span>Menu</span>
+      </button>
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 bg-gradient-to-tr from-rose-500 to-pink-400 text-white rounded-lg flex items-center justify-center font-bold text-xs shadow-xs">K</div>
+        <span class="font-bold text-xs text-slate-800">KOL Agency</span>
+      </div>
+    `;
+    document.body.prepend(mobileHeader);
   }
 
-  let openBtn = document.getElementById("btn-expand-sidebar");
-  if (!openBtn) {
-    openBtn = document.createElement("button");
-    openBtn.type = "button";
-    openBtn.id = "btn-expand-sidebar";
-    openBtn.title = "Tampilkan Menu";
-    openBtn.className = "fixed top-5 left-5 z-30 hidden items-center gap-1.5 bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-xl shadow-md shadow-rose-100 text-xs font-bold transition";
-    openBtn.innerHTML = `<i data-lucide="panel-left-open" class="w-4 h-4"></i><span>Menu</span>`;
-    document.body.appendChild(openBtn);
-    openBtn.addEventListener("click", () => setSidebarCollapsed(false));
+  // Tombol buka Menu di desktop (saat sidebar di-collapse)
+  let desktopOpenBtn = document.getElementById("btn-expand-sidebar");
+  if (!desktopOpenBtn) {
+    desktopOpenBtn = document.createElement("button");
+    desktopOpenBtn.type = "button";
+    desktopOpenBtn.id = "btn-expand-sidebar";
+    desktopOpenBtn.title = "Tampilkan Menu";
+    desktopOpenBtn.className = "hidden fixed top-3.5 left-3.5 z-30 items-center gap-1.5 bg-white/95 backdrop-blur-xs border border-rose-200 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-xl shadow-md shadow-rose-100 text-xs font-bold transition";
+    desktopOpenBtn.innerHTML = `<i data-lucide="menu" class="w-4 h-4"></i><span>Menu</span>`;
+    document.body.appendChild(desktopOpenBtn);
   }
 
-  function setSidebarCollapsed(collapsed) {
-    localStorage.setItem("kol_sidebar_collapsed", collapsed ? "1" : "0");
-    if (collapsed) {
-      aside.classList.add("-translate-x-full");
-      main.classList.remove("ml-64");
-      main.classList.add("ml-0", "pt-16");
-      openBtn.classList.remove("hidden");
-      openBtn.classList.add("flex");
-    } else {
+  const mobileMenuBtn = document.getElementById("btn-mobile-menu");
+  if (mobileMenuBtn) mobileMenuBtn.onclick = () => setSidebarOpen(true);
+  if (desktopOpenBtn) desktopOpenBtn.onclick = () => setSidebarOpen(true);
+
+  const isMobileViewport = () => window.innerWidth < 1024;
+
+  function setSidebarOpen(open) {
+    const mobile = isMobileViewport();
+    if (!mobile) {
+      localStorage.setItem("kol_sidebar_collapsed", open ? "0" : "1");
+    }
+
+    if (open) {
       aside.classList.remove("-translate-x-full");
-      main.classList.add("ml-64");
-      main.classList.remove("ml-0", "pt-16");
-      openBtn.classList.add("hidden");
-      openBtn.classList.remove("flex");
+      if (mobile) {
+        backdrop.classList.remove("hidden");
+        main.classList.remove("lg:ml-64", "ml-64");
+        main.classList.add("ml-0", "pt-16");
+        desktopOpenBtn.classList.add("hidden");
+        desktopOpenBtn.classList.remove("lg:flex");
+      } else {
+        backdrop.classList.add("hidden");
+        main.classList.add("lg:ml-64", "ml-64");
+        main.classList.remove("ml-0", "pt-16");
+        desktopOpenBtn.classList.add("hidden");
+        desktopOpenBtn.classList.remove("lg:flex");
+      }
+    } else {
+      aside.classList.add("-translate-x-full");
+      backdrop.classList.add("hidden");
+      main.classList.remove("lg:ml-64", "ml-64");
+      main.classList.add("ml-0", "pt-16");
+      if (mobile) {
+        desktopOpenBtn.classList.add("hidden");
+        desktopOpenBtn.classList.remove("lg:flex");
+      } else {
+        desktopOpenBtn.classList.remove("hidden");
+        desktopOpenBtn.classList.add("lg:flex");
+      }
     }
   }
 
-  if (localStorage.getItem("kol_sidebar_collapsed") === "1") {
-    setSidebarCollapsed(true);
+  // Tutup sidebar otomatis saat link menu diklik di HP
+  aside.querySelectorAll("#sidebar-nav a").forEach(link => {
+    link.addEventListener("click", () => {
+      if (isMobileViewport()) setSidebarOpen(false);
+    });
+  });
+
+  if (isMobileViewport()) {
+    setSidebarOpen(false);
+  } else {
+    const desktopCollapsed = localStorage.getItem("kol_sidebar_collapsed") === "1";
+    setSidebarOpen(!desktopCollapsed);
   }
+
+  let lastMobile = isMobileViewport();
+  window.addEventListener("resize", () => {
+    const nowMobile = isMobileViewport();
+    if (nowMobile !== lastMobile) {
+      lastMobile = nowMobile;
+      if (nowMobile) {
+        setSidebarOpen(false);
+      } else {
+        const desktopCollapsed = localStorage.getItem("kol_sidebar_collapsed") === "1";
+        setSidebarOpen(!desktopCollapsed);
+      }
+    }
+  });
 }
 
 export function initPageLayout(activeMenuId, allowedRoles = ["owner", "kol_specialist", "finance"]) {
@@ -434,7 +511,7 @@ export function initPageLayout(activeMenuId, allowedRoles = ["owner", "kol_speci
     logoutBtn.addEventListener("click", logoutUser);
   }
 
-  setupCollapsibleSidebar();
+  setupResponsiveSidebar();
   if (window.lucide) window.lucide.createIcons();
   return user;
 }
