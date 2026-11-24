@@ -47,7 +47,13 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="bg-white p-5 sm:p-6 rounded-2xl border border-rose-100 shadow-sm space-y-4">
-        <h2 class="text-sm font-bold text-slate-800">1. Generator Pesan Reach Out (Sesuai SOP)</h2>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h2 class="text-sm font-bold text-slate-800">1. Generator Pesan Reach Out</h2>
+          <select id="ai-mode" class="px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 text-xs font-bold outline-none">
+            <option value="kol">Mode: KOL (Rate Card)</option>
+            <option value="affiliate">Mode: Affiliate (Barter Sampel / GMV)</option>
+          </select>
+        </div>
 
         <div class="relative">
           <label class="block text-[11px] font-semibold text-slate-500 mb-1">Cari KOL dari Talent Database (Ketik Nama / @Akun / WA)</label>
@@ -109,10 +115,16 @@
             <option value="">Semua Niche</option>
             <option value="Beauty">Beauty</option>
             <option value="Fashion">Fashion</option>
-            <option value="Daily Life">Daily Life</option>
-            <option value="Food & Beverage">Food & Beverage</option>
-            <option value="Comedy">Comedy</option>
-            <option value="Family">Family</option>
+            <option value="Lifestyle">Lifestyle</option>
+            <option value="Mom & Baby">Mom & Baby</option>
+            <option value="Food">Food</option>
+            <option value="Health">Health</option>
+            <option value="Home & Living">Home & Living</option>
+            <option value="Tech">Tech</option>
+            <option value="Travel">Travel</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Education">Education</option>
+            <option value="Automotive">Automotive</option>
           </select>
 
           <select id="rec-sow" class="px-3 py-2 rounded-xl border border-rose-200 text-xs bg-white outline-none focus:ring-2 focus:ring-rose-400">
@@ -157,11 +169,29 @@
     }
 
     function updateDraft() {
+      const mode = document.getElementById("ai-mode")?.value || "kol";
       const pic = user?.name || "Talent Manager";
-      const kol = document.getElementById("ai-kol").value.trim() || "Kak [Nama KOL]";
-      const cat = document.getElementById("ai-cat").value.trim() || "Produk FMCG / Beauty";
+      const kol = document.getElementById("ai-kol").value.trim() || "Kak [Nama Kreator]";
+      const cat = document.getElementById("ai-cat").value.trim() || "Produk Beauty / Skincare";
       const ev = document.getElementById("ai-event").value.trim() || "terdekat";
       const city = document.getElementById("ai-city").value.trim() || "JKT";
+
+      if (mode === "affiliate") {
+        document.getElementById("ai-output").value = `Haloo selamat sore ${kol}!
+Perkenalkan aku ${pic}, tim campaign dari agensi.
+
+Kita tertarik ajak kakak kolaborasi Affiliate untuk produk ${cat} (sistem barter free sampel produk + komisi penjualan tinggi).
+
+Kalau kakak berminat, boleh bantu kirimkan data berikut ya kak:
+- Screenshot GMV TikTok / Shopee 30 hari terakhir :
+- Nama Penerima :
+- No. HP Aktif :
+- Alamat Lengkap Pengiriman Sampel :
+
+Nanti produk langsung kami kirimkan agar kakak bisa buat konten VT/Showcase sesuai jadwal (${ev}).
+Ditunggu konfirmasinya ya kak, thank you!`;
+        return;
+      }
 
       document.getElementById("ai-output").value = `Haloo selamat sore ${kol}!
 Perkenalkan aku ${pic}, talent manager dari agensi.
@@ -169,21 +199,24 @@ Perkenalkan aku ${pic}, talent manager dari agensi.
 Saat ini kita akan ada campaign bersama salah satu brand (${cat}) untuk periode ${ev}.
 Kita sepakat approach kakak untuk jadi salah satu KOL pada campaign tsb.
 
-Adapun, kita butuh rate card dengan detil berikut ini:
+Adapun, kita butuh rate card terbaru dengan detil berikut ini:
 Visit [${city}] :
-1X IG Story :
-1X IG Feed :
-1X IG Reels :
-1X TikTok Video :
-1X TikTok Mirroring IG Reels :
-1X Owning :
+1x Single Story (Video) :
+1x Single Feed :
+IG Reels >60s :
+TikTok Video >60s :
+Mirroring >60s (Totalan) :
+Owning (Add on) :
+Boost Code 1 mo. (Addon) :
+Yellow Cart :
 
 Apa kakak available? Mohon infokan YA/TIDAK serta rate card terbarunya ya kak agar segera bisa kami ajukan ke pihak brand.
 Thank you!`;
     }
 
-    ["ai-kol", "ai-cat", "ai-event", "ai-city"].forEach(id => {
-      document.getElementById(id).addEventListener("input", updateDraft);
+    ["ai-kol", "ai-cat", "ai-event", "ai-city", "ai-mode"].forEach(id => {
+      document.getElementById(id)?.addEventListener("input", updateDraft);
+      document.getElementById(id)?.addEventListener("change", updateDraft);
     });
 
     function selectKolForReachOut(selected) {

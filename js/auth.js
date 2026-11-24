@@ -6,10 +6,26 @@ const DEFAULT_USERS = {
   finance: { username: "finance", password: "123", name: "Admin Finance", role: "finance" }
 };
 
+export const NICHE_MAP = {
+  "Beauty": ["Skincare", "Makeup", "Haircare"],
+  "Fashion": ["Hijab", "Outfit", "Luxury"],
+  "Lifestyle": ["Daily Life", "Couple", "Aesthetic"],
+  "Mom & Baby": ["Parenting", "Baby Care", "Family"],
+  "Food": ["Food Review", "Cooking", "Baking"],
+  "Health": ["Fitness", "Wellness", "Nutrition"],
+  "Home & Living": ["Cleaning", "Decor", "Organization"],
+  "Tech": ["Gadget", "Gaming", "Software"],
+  "Travel": ["Hotel", "Adventure", "Local Travel"],
+  "Entertainment": ["Comedy", "Storytelling", "Music"],
+  "Education": ["Finance", "Business", "Career"],
+  "Automotive": ["Cars", "Motorcycle", "Automotive Review"]
+};
+
 const MENU_ITEMS = [
   { id: "dashboard", label: "Overview", href: "dashboard.html", icon: "layout-dashboard", roles: ["owner", "kol_specialist", "finance"] },
   { id: "leads", label: "Lead Masuk", href: "leads.html", icon: "inbox", roles: ["owner", "kol_specialist"] },
   { id: "master-kol", label: "Talent Database", href: "master-kol.html", icon: "users", roles: ["owner", "kol_specialist", "finance"] },
+  { id: "affiliate", label: "Listing Affiliate", href: "affiliate.html", icon: "shopping-bag", roles: ["owner", "kol_specialist"] },
   { id: "campaign", label: "Campaigns", href: "campaign.html", icon: "megaphone", roles: ["owner", "kol_specialist"] },
   { id: "clients", label: "Client Management", href: "clients.html", icon: "building-2", roles: ["owner", "kol_specialist"] },
   { id: "finance", label: "Finance & Tagihan", href: "finance.html", icon: "wallet", roles: ["owner", "finance"] },
@@ -110,7 +126,7 @@ const DEMO_SEED = {
       ig: "rakamakanenak",
       tiktok: "rakakuliner",
       aliases: ["raka_jajan"],
-      niche: "Food & Beverage",
+      niche: "Food", subNiche: "Food Review",
       tier: "Macro",
       er: "5.2% • JKT",
       markup: 25,
@@ -141,6 +157,56 @@ const DEMO_SEED = {
           paymentStatus: "Unpaid"
         }
       }
+    }
+  },
+  affiliates: {
+    "AFF-100001": {
+      id: "AFF-100001",
+      username: "Deviallutfy",
+      platform: "Tiktok",
+      niche: "Beauty",
+      subNiche: "Skincare",
+      accountLink: "https://www.tiktok.com/@deviallutfy",
+      package: "Tiktok Video",
+      gmv: 6600000,
+      contact: "085959597441",
+      postLinks: ["https://vt.tiktok.com/ZSQJCU1/"],
+      approval: "Posting Video",
+      notes: "Barter sampel serum, fast response",
+      updatedBy: "Staff KOL Specialist",
+      updatedAt: new Date().toISOString()
+    },
+    "AFF-100002": {
+      id: "AFF-100002",
+      username: "Syifa Nafi'ah",
+      platform: "Tiktok",
+      niche: "Beauty",
+      subNiche: "Makeup",
+      accountLink: "https://www.tiktok.com/@syifanafiah",
+      package: "Tiktok Video",
+      gmv: 21000000,
+      contact: "087817971329",
+      postLinks: ["https://vt.tiktok.com/ZSxl22/"],
+      approval: "Posting Video",
+      notes: "GMV tinggi di kategori lip tint",
+      updatedBy: "Staff KOL Specialist",
+      updatedAt: new Date().toISOString()
+    },
+    "AFF-100003": {
+      id: "AFF-100003",
+      username: "Nabila samuri",
+      platform: "Tiktok",
+      niche: "Beauty",
+      subNiche: "Skincare",
+      accountLink: "https://www.tiktok.com/@nabilasamuri",
+      package: "Tiktok Video",
+      gmv: 65400000,
+      contact: "08563645405",
+      postLinks: [],
+      approval: "Pengajuan Sampel",
+      notes: "Menunggu konfirmasi alamat pengiriman sampel",
+      updatedBy: "Staff KOL Specialist",
+      updatedAt: new Date().toISOString()
     }
   },
   clients: {
@@ -270,17 +336,52 @@ export async function showToast(title, icon = "success") {
   });
 }
 
-export async function loginUser(username, password) {
-  const uname = username.trim().toLowerCase();
-  const users = getDemoCollection("users");
-  const userData = users[uname] || DEFAULT_USERS[uname];
-  if (userData && String(userData.password) === String(password)) {
+export async function loginUser(identifier, password) {
+  const query = identifier.trim().toLowerCase();
+  if (!query) {
+    return { success: false, message: "Masukkan username atau nama lengkap terlebih dahulu." };
+  }
+
+  const storedUsers = getDemoCollection("users");
+  const mergedUsers = { ...DEFAULT_USERS, ...storedUsers };
+  const allUsersList = Object.values(mergedUsers);
+
+  // 1. Cek kecocokan exact berdasarkan username (prioritas utama)
+  let matchedUsers = allUsersList.filter(
+    u => String(u.username || "").trim().toLowerCase() === query
+  );
+
+  // 2. Jika tidak ketemu di username, cari berdasarkan Nama Lengkap (case-insensitive)
+  if (matchedUsers.length === 0) {
+    matchedUsers = allUsersList.filter(
+      u => String(u.name || "").trim().toLowerCase() === query
+    );
+  }
+
+  // Filter akun yang password-nya cocok
+  const validMatches = matchedUsers.filter(
+    u => String(u.password) === String(password)
+  );
+
+  if (validMatches.length === 1) {
+    const userData = validMatches[0];
     localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(LOGGED_OUT_KEY);
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(userData));
     return { success: true, user: userData };
   }
-  return { success: false, message: "Username atau password tidak sesuai. (Demo: owner / 123)" };
+
+  if (validMatches.length > 1) {
+    return {
+      success: false,
+      message: "Terdapat lebih dari satu akun dengan nama yang sama. Silakan login menggunakan username."
+    };
+  }
+
+  return {
+    success: false,
+    message: "Username / Nama atau password tidak sesuai. (Demo: owner / 123)"
+  };
 }
 
 export function getCurrentUser() {

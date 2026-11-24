@@ -326,11 +326,13 @@ function renderTrackingTable() {
           </select>
           ${item.paymentStatus === "Paid" ? `<div class="text-[10px] font-bold text-emerald-600 mt-1">✓ Paid (${item.paidBy || "Finance"})</div>` : ""}
         </td>
-        <td class="py-3 px-2.5 text-[11px]">
+        <td class="py-3 px-2.5 text-[11px] space-y-0.5">
+          ${item.draftLink ? `<a href="${item.draftLink}" target="_blank" class="text-amber-600 underline font-semibold block truncate max-w-[130px]">Cek Draft Video</a>` : ""}
           ${item.postLink
-            ? `<a href="${item.postLink}" target="_blank" class="text-rose-600 underline font-semibold block truncate max-w-[120px]">Lihat Konten</a>`
-            : `<span class="text-slate-400 italic">Belum ada link</span>`}
-          ${item.boostCode ? `<div class="text-[10px] text-slate-500 truncate max-w-[120px] mt-0.5">Boost: <code class="bg-slate-100 px-1 rounded">${item.boostCode}</code></div>` : ""}
+            ? `<a href="${item.postLink}" target="_blank" class="text-rose-600 underline font-semibold block truncate max-w-[130px]">Lihat Konten</a>`
+            : `<span class="text-slate-400 italic block">Belum ada link</span>`}
+          ${item.boostCode ? `<div class="text-[10px] text-slate-500 truncate max-w-[130px]">Boost: <code class="bg-slate-100 px-1 rounded">${item.boostCode}</code></div>` : ""}
+          ${item.insightNote ? `<div class="text-[10px] text-emerald-700 truncate max-w-[140px]" title="${item.insightNote}">📊 ${item.insightNote}</div>` : ""}
         </td>
         <td class="py-3 px-2.5 text-center">
           <div class="flex flex-col sm:flex-row items-center justify-center gap-1">
@@ -388,8 +390,10 @@ function renderTrackingTable() {
       const item = campaigns[activeCampaignId]?.items?.[btn.dataset.post];
       if (!item) return;
       document.getElementById("p-item-id").value = item.kolId;
+      document.getElementById("p-draft-link").value = item.draftLink || "";
       document.getElementById("p-link").value = item.postLink || "";
       document.getElementById("p-boost").value = item.boostCode || "";
+      document.getElementById("p-insight").value = item.insightNote || "";
       toggleModal("modal-post", true);
     });
   });
@@ -709,8 +713,10 @@ document.getElementById("cancel-modal-post").addEventListener("click", () => tog
 document.getElementById("form-post").addEventListener("submit", (e) => {
   e.preventDefault();
   const kolId = document.getElementById("p-item-id").value;
+  const draftLink = document.getElementById("p-draft-link").value.trim();
   const postLink = document.getElementById("p-link").value.trim();
   const boostCode = document.getElementById("p-boost").value.trim();
+  const insightNote = document.getElementById("p-insight").value.trim();
   const now = new Date().toISOString();
 
   const cmp = campaigns[activeCampaignId];
@@ -719,8 +725,10 @@ document.getElementById("form-post").addEventListener("submit", (e) => {
 
   const updatedItem = {
     ...existingItem,
+    draftLink,
     postLink,
     boostCode,
+    insightNote,
     updatedBy: user?.name || "Unknown",
     updatedAt: now
   };
@@ -731,7 +739,7 @@ document.getElementById("form-post").addEventListener("submit", (e) => {
   });
 
   toggleModal("modal-post", false);
-  showToast("Link konten & boost code disimpan!");
+  showToast("Draft, link konten & insight disimpan!");
 });
 
 document.getElementById("btn-export-proposal").addEventListener("click", () => {

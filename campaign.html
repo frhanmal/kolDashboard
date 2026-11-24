@@ -195,10 +195,16 @@
             <select id="c-niche" class="w-full px-3 py-2 rounded-xl border border-rose-200 text-sm bg-white">
               <option value="Beauty">Beauty</option>
               <option value="Fashion">Fashion</option>
-              <option value="Daily Life">Daily Life</option>
-              <option value="Food & Beverage">Food & Beverage</option>
-              <option value="Comedy">Comedy</option>
-              <option value="Family">Family</option>
+              <option value="Lifestyle">Lifestyle</option>
+              <option value="Mom & Baby">Mom & Baby</option>
+              <option value="Food">Food</option>
+              <option value="Health">Health</option>
+              <option value="Home & Living">Home & Living</option>
+              <option value="Tech">Tech</option>
+              <option value="Travel">Travel</option>
+              <option value="Entertainment">Entertainment</option>
+              <option value="Education">Education</option>
+              <option value="Automotive">Automotive</option>
             </select>
           </div>
         </div>
@@ -344,15 +350,23 @@
   </div>
 
   <div id="modal-post" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs hidden items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-rose-100 overflow-hidden">
+    <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-rose-100 overflow-hidden">
       <div class="p-5 border-b border-rose-100 flex items-center justify-between">
-        <h2 class="text-base font-bold text-slate-800">Bukti Konten & Boost Code</h2>
+        <div>
+          <h2 class="text-base font-bold text-slate-800">Draft, Bukti Konten & Report Insight</h2>
+          <p class="text-[11px] text-slate-500">Simpan link draft review, link konten tayang, boost code, dan insight performa.</p>
+        </div>
         <button id="close-modal-post" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <form id="form-post" class="p-5 space-y-4">
+      <form id="form-post" class="p-5 space-y-3.5">
         <input type="hidden" id="p-item-id" />
         <div>
-          <label class="block text-xs font-semibold text-slate-600 mb-1">Link Konten (IG / TikTok)</label>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Link Draft Video (Review Brief)</label>
+          <input type="url" id="p-draft-link" placeholder="https://drive.google.com/... (Draft sebelum posting)"
+            class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Link Konten Tayang (IG / TikTok)</label>
           <input type="url" id="p-link" placeholder="https://www.tiktok.com/@..."
             class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 outline-none" />
         </div>
@@ -361,9 +375,14 @@
           <input type="text" id="p-boost" placeholder="Tempel kode boost 180 hari disini..."
             class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-sm focus:ring-2 focus:ring-rose-400 outline-none" />
         </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Report Insight (Likes, Reach, Views & Kualitas Video)</label>
+          <textarea id="p-insight" rows="2" placeholder="Contoh: Views 45K, Likes 3.2K, Reach 38K, visual jernih sesuai key message"
+            class="w-full px-3.5 py-2 rounded-xl border border-rose-200 text-xs focus:ring-2 focus:ring-rose-400 outline-none"></textarea>
+        </div>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" id="cancel-modal-post" class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600">Batal</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-semibold">Simpan Bukti</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-semibold">Simpan Data Konten</button>
         </div>
       </form>
     </div>
