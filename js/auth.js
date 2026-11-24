@@ -310,25 +310,41 @@ export async function logoutUser() {
   window.location.replace("index.html");
 }
 
+(function ensureFavicon() {
+  const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f43f5e"/><stop offset="100%" stop-color="#f472b6"/></linearGradient></defs><rect width="64" height="64" rx="16" fill="url(#g)"/><text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="34" fill="#ffffff">K</text></svg>`;
+  let link = document.querySelector("link[rel~='icon']");
+  if (!link) {
+    link = document.createElement("link");
+    link.rel = "icon";
+    link.type = "image/svg+xml";
+    document.head.appendChild(link);
+  }
+  link.href = "data:image/svg+xml," + encodeURIComponent(svgIcon);
+})();
+
 function setupResponsiveSidebar() {
   const aside = document.querySelector("aside");
   const main = document.querySelector("main");
   if (!aside || !main) return;
 
+  // Hapus class responsif statis yang bentrok saat toggle manual di desktop
+  aside.classList.remove("lg:translate-x-0", "translate-x-0", "-translate-x-full");
   aside.classList.add("transition-transform", "duration-300", "z-40");
-  main.classList.add("transition-all", "duration-300", "min-w-0", "w-full");
+
+  main.classList.remove("lg:ml-64", "ml-64", "ml-0", "lg:pt-8", "lg:pt-7", "pt-16");
+  main.classList.add("transition-all", "duration-300", "min-w-0", "flex-1");
 
   // Backdrop gelap saat sidebar dibuka di layar HP (< 1024px)
   let backdrop = document.getElementById("sidebar-backdrop");
   if (!backdrop) {
     backdrop = document.createElement("div");
     backdrop.id = "sidebar-backdrop";
-    backdrop.className = "fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-30 hidden lg:hidden transition-opacity";
+    backdrop.className = "fixed inset-0 bg-slate-900/45 backdrop-blur-xs z-30 hidden transition-opacity";
     document.body.appendChild(backdrop);
   }
   backdrop.onclick = () => setSidebarOpen(false);
 
-  // Tombol tutup di header sidebar
+  // Tombol tutup / collapse di header sidebar (berfungsi di HP maupun Laptop)
   const sidebarHeader = aside.querySelector(".border-b");
   let closeBtn = document.getElementById("btn-collapse-sidebar");
   if (sidebarHeader && !closeBtn) {
@@ -336,13 +352,13 @@ function setupResponsiveSidebar() {
     closeBtn.type = "button";
     closeBtn.id = "btn-collapse-sidebar";
     closeBtn.title = "Sembunyikan Menu";
-    closeBtn.className = "ml-auto p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition";
+    closeBtn.className = "ml-auto p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer";
     closeBtn.innerHTML = `<i data-lucide="panel-left-close" class="w-4 h-4"></i>`;
     sidebarHeader.appendChild(closeBtn);
   }
   if (closeBtn) closeBtn.onclick = () => setSidebarOpen(false);
 
-  // Mobile top bar (otomatis dibuat jika belum ada di HTML)
+  // Mobile top bar (< 1024px)
   let mobileHeader = document.getElementById("mobile-top-header");
   if (!mobileHeader) {
     mobileHeader = document.createElement("header");
@@ -361,14 +377,14 @@ function setupResponsiveSidebar() {
     document.body.prepend(mobileHeader);
   }
 
-  // Tombol buka Menu di desktop (saat sidebar di-collapse)
+  // Tombol buka Menu di laptop/desktop (muncul saat sidebar di-collapse)
   let desktopOpenBtn = document.getElementById("btn-expand-sidebar");
   if (!desktopOpenBtn) {
     desktopOpenBtn = document.createElement("button");
     desktopOpenBtn.type = "button";
     desktopOpenBtn.id = "btn-expand-sidebar";
     desktopOpenBtn.title = "Tampilkan Menu";
-    desktopOpenBtn.className = "hidden fixed top-3.5 left-3.5 z-30 items-center gap-1.5 bg-white/95 backdrop-blur-xs border border-rose-200 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-xl shadow-md shadow-rose-100 text-xs font-bold transition";
+    desktopOpenBtn.className = "hidden fixed top-4 left-4 z-30 items-center gap-1.5 bg-white/95 backdrop-blur-xs border border-rose-200 text-rose-600 hover:bg-rose-50 px-3 py-2 rounded-xl shadow-md shadow-rose-100 text-xs font-bold transition cursor-pointer";
     desktopOpenBtn.innerHTML = `<i data-lucide="menu" class="w-4 h-4"></i><span>Menu</span>`;
     document.body.appendChild(desktopOpenBtn);
   }
@@ -387,35 +403,37 @@ function setupResponsiveSidebar() {
 
     if (open) {
       aside.classList.remove("-translate-x-full");
+      aside.classList.add("translate-x-0");
+      desktopOpenBtn.classList.add("hidden");
+      desktopOpenBtn.classList.remove("flex");
+
       if (mobile) {
         backdrop.classList.remove("hidden");
-        main.classList.remove("lg:ml-64", "ml-64");
-        main.classList.add("ml-0", "pt-16");
-        desktopOpenBtn.classList.add("hidden");
-        desktopOpenBtn.classList.remove("lg:flex");
+        main.style.marginLeft = "0px";
+        main.style.paddingTop = "4rem";
       } else {
         backdrop.classList.add("hidden");
-        main.classList.add("lg:ml-64", "ml-64");
-        main.classList.remove("ml-0", "pt-16");
-        desktopOpenBtn.classList.add("hidden");
-        desktopOpenBtn.classList.remove("lg:flex");
+        main.style.marginLeft = "16rem";
+        main.style.paddingTop = "";
       }
     } else {
+      aside.classList.remove("translate-x-0");
       aside.classList.add("-translate-x-full");
       backdrop.classList.add("hidden");
-      main.classList.remove("lg:ml-64", "ml-64");
-      main.classList.add("ml-0", "pt-16");
+      main.style.marginLeft = "0px";
+
       if (mobile) {
+        main.style.paddingTop = "4rem";
         desktopOpenBtn.classList.add("hidden");
-        desktopOpenBtn.classList.remove("lg:flex");
+        desktopOpenBtn.classList.remove("flex");
       } else {
+        main.style.paddingTop = "4rem";
         desktopOpenBtn.classList.remove("hidden");
-        desktopOpenBtn.classList.add("lg:flex");
+        desktopOpenBtn.classList.add("flex");
       }
     }
   }
 
-  // Tutup sidebar otomatis saat link menu diklik di HP
   aside.querySelectorAll("#sidebar-nav a").forEach(link => {
     link.addEventListener("click", () => {
       if (isMobileViewport()) setSidebarOpen(false);
