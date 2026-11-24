@@ -275,27 +275,27 @@ export async function loginUser(username, password) {
   const users = getDemoCollection("users");
   const userData = users[uname] || DEFAULT_USERS[uname];
   if (userData && String(userData.password) === String(password)) {
+    localStorage.removeItem(SESSION_KEY);
     localStorage.removeItem(LOGGED_OUT_KEY);
-    localStorage.setItem(SESSION_KEY, JSON.stringify(userData));
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(userData));
     return { success: true, user: userData };
   }
   return { success: false, message: "Username atau password tidak sesuai. (Demo: owner / 123)" };
 }
 
-export function getCurrentUser({ allowAutoDemo = true } = {}) {
-  const raw = localStorage.getItem(SESSION_KEY);
+export function getCurrentUser() {
+  // Hapus sisa sesi lama di localStorage agar tidak auto-login tanpa izin
+  if (localStorage.getItem(SESSION_KEY)) {
+    localStorage.removeItem(SESSION_KEY);
+  }
+
+  const raw = sessionStorage.getItem(SESSION_KEY);
   if (raw) {
     try {
       return JSON.parse(raw);
     } catch {
-      localStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
     }
-  }
-
-  const explicitlyLoggedOut = localStorage.getItem(LOGGED_OUT_KEY) === "1";
-  if (DEMO_MODE && allowAutoDemo && !explicitlyLoggedOut) {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(DEFAULT_USERS.owner));
-    return DEFAULT_USERS.owner;
   }
   return null;
 }
@@ -306,7 +306,6 @@ export async function logoutUser() {
 
   localStorage.removeItem(SESSION_KEY);
   sessionStorage.clear();
-  localStorage.setItem(LOGGED_OUT_KEY, "1");
   window.location.replace("index.html");
 }
 
@@ -463,7 +462,7 @@ function setupResponsiveSidebar() {
 }
 
 export function initPageLayout(activeMenuId, allowedRoles = ["owner", "kol_specialist", "finance"]) {
-  const user = getCurrentUser({ allowAutoDemo: true });
+  const user = getCurrentUser();
   if (!user) {
     window.location.replace("index.html");
     return null;
