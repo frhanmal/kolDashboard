@@ -63,13 +63,25 @@
   </div>
 
   <script type="module">
-    import { initPageLayout, subscribeDemoCollection } from "./js/auth.js";
+    import { initPageLayout, subscribeDemoCollection, updateDemoItem, showToast } from "./js/auth.js";
 
     const user = initPageLayout("clients", ["owner", "kol_specialist"]);
     const isOwner = user?.role === "owner";
     const formatRp = (n) => "Rp " + Number(n || 0).toLocaleString("id-ID");
 
+    const CAMPAIGN_STATUS_OPTIONS = [
+      "Planning",
+      "Active",
+      "2 - Unsent ke Client, Ongoing",
+      "3 - Sent ke Client, Ongoing",
+      "4 - Approved, Campaign Onprocess",
+      "1 - On Hold Postponed",
+      "5 - Complete, Payment Due",
+      "Completed"
+    ];
+
     let byBrandMap = {};
+    let currentModalBrand = "";
 
     const modalEl = document.getElementById("modal-client-detail");
     const closeModal = () => {
@@ -84,12 +96,14 @@
     function openClientModal(brandName) {
       const data = byBrandMap[brandName];
       if (!data) return;
+      currentModalBrand = brandName;
 
       document.getElementById("client-modal-title").textContent = `Brand / Klien: ${data.brand}`;
       document.getElementById("client-modal-subtitle").textContent =
         `${data.campaigns.length} Campaign • ${data.totalKol} KOL Terlibat • Total Publish: ${formatRp(data.publish)}`;
 
-      document.getElementById("client-modal-body").innerHTML = data.campaigns.map(c => {
+      const bodyEl = document.getElementById("client-modal-body");
+      bodyEl.innerHTML = data.campaigns.map(c => {
         const kolHtml = c.kols.length
           ? c.kols.map(k => {
               const margin = Number(k.publishTotal || 0) - Number(k.nettTotal || 0);
@@ -108,14 +122,23 @@
             }).join("")
           : `<p class="text-slate-400 italic py-2">Belum ada KOL di campaign ini.</p>`;
 
+        const curSt = c.status || "Planning";
+        const opts = CAMPAIGN_STATUS_OPTIONS.includes(curSt) ? CAMPAIGN_STATUS_OPTIONS : [curSt, ...CAMPAIGN_STATUS_OPTIONS];
+        const selectOptsHtml = opts.map(st => `<option value="${st}" ${st === curSt ? "selected" : ""}>${st}</option>`).join("");
+
         return `
           <div class="p-4 rounded-2xl border border-rose-100 bg-white space-y-2.5">
-            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-50 pb-2">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-50 pb-2.5">
               <div>
                 <p class="text-sm font-bold text-slate-800">${c.name}</p>
                 <p class="text-[11px] text-slate-400">Niche: ${c.niche || "-"} • PIC: ${c.pic || "-"}</p>
               </div>
-              <span class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-rose-50 text-rose-600">${c.status || "-"}</span>
+              <div class="flex items-center gap-1.5">
+                <label class="text-[10px] font-bold uppercase text-slate-400">Status:</label>
+                <select data-cmp-id="${c.id}" class="cli-cmp-status-select px-2.5 py-1 rounded-xl border border-rose-200 bg-rose-50/70 text-[11px] font-bold text-rose-700 outline-none focus:ring-2 focus:ring-rose-400 cursor-pointer">
+                  ${selectOptsHtml}
+                </select>
+              </div>
             </div>
             <div class="space-y-1.5">
               <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Nama KOL (${c.kols.length})</p>
@@ -124,6 +147,19 @@
           </div>
         `;
       }).join("");
+
+      bodyEl.querySelectorAll(".cli-cmp-status-select").forEach(sel => {
+        sel.addEventListener("change", (e) => {
+          const cmpId = e.target.dataset.cmpId;
+          const newStatus = e.target.value;
+          updateDemoItem("campaigns", cmpId, {
+            status: newStatus,
+            updatedBy: user?.name || "Unknown",
+            updatedAt: new Date().toISOString()
+          });
+          showToast(`Status campaign diubah ke "${newStatus}"!`);
+        });
+      });
 
       modalEl.classList.remove("hidden");
       modalEl.classList.add("flex");
@@ -174,7 +210,12 @@
       });
     }
 
-    subscribeDemoCollection("campaigns", data => render(data || {}));
+    subscribeDemoCollection("campaigns", data => {
+      render(data || {});
+      if (!modalEl.classList.contains("hidden") && currentModalBrand && byBrandMap[currentModalBrand]) {
+        openClientModal(currentModalBrand);
+      }
+    });
   </script>
 </body>
 </html>

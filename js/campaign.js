@@ -98,11 +98,38 @@ function initData() {
   });
 }
 
+function syncSelectOption(selectEl, val) {
+  if (!selectEl || !val) return;
+  const exists = Array.from(selectEl.options).some(o => o.value === val);
+  if (!exists) {
+    const opt = document.createElement("option");
+    opt.value = val;
+    opt.textContent = val;
+    selectEl.appendChild(opt);
+  }
+  selectEl.value = val;
+}
+
+function getCampaignStatusBadgeClass(status = "") {
+  const s = status.toLowerCase();
+  if (s.includes("planning") || s.includes("unsent")) return "bg-amber-50 text-amber-700 border-amber-200";
+  if (s.includes("active") || s.includes("approved") || s.includes("onprocess")) return "bg-emerald-50 text-emerald-700 border-emerald-200";
+  if (s.includes("hold") || s.includes("postponed")) return "bg-red-50 text-red-700 border-red-200";
+  if (s.includes("complete")) return "bg-slate-100 text-slate-700 border-slate-200";
+  return "bg-rose-50 text-rose-700 border-rose-200";
+}
+
 function populateCampaignSelector() {
   const list = Object.values(campaigns);
+  const statusWrap = document.getElementById("campaign-status-wrap");
+  const statusSelect = document.getElementById("active-campaign-status");
+  const editCmpBtn = document.getElementById("btn-edit-campaign");
+
   if (list.length === 0) {
     activeCampaignId = "";
     if (cmpSearchInput) cmpSearchInput.value = "";
+    statusWrap?.classList.add("hidden");
+    editCmpBtn?.classList.add("hidden");
     document.getElementById("campaign-meta").textContent = "Belum ada campaign tersimpan.";
     return;
   }
@@ -118,10 +145,33 @@ function populateCampaignSelector() {
   if (btnClearCmpSearch) {
     btnClearCmpSearch.classList.toggle("hidden", !cmpSearchInput?.value);
   }
-  document.getElementById("campaign-meta").textContent = active
-    ? `Niche: ${active.niche || "-"} • Status: ${active.status || "-"} • PIC: ${active.pic || "-"}`
-    : `${list.length} campaign tersedia — pilih untuk melihat data`;
+
+  if (active) {
+    statusWrap?.classList.remove("hidden");
+    editCmpBtn?.classList.remove("hidden");
+    const st = active.status || "Planning";
+    syncSelectOption(statusSelect, st);
+    if (statusSelect) {
+      statusSelect.className = `px-2.5 py-1.5 rounded-xl border text-xs font-bold focus:bg-white focus:ring-2 focus:ring-rose-400 outline-none cursor-pointer transition ${getCampaignStatusBadgeClass(st)}`;
+    }
+    document.getElementById("campaign-meta").textContent = `Niche: ${active.niche || "-"} • PIC: ${active.pic || "-"}`;
+  } else {
+    statusWrap?.classList.add("hidden");
+    editCmpBtn?.classList.add("hidden");
+    document.getElementById("campaign-meta").textContent = `${list.length} campaign tersedia — pilih untuk melihat data`;
+  }
 }
+
+document.getElementById("active-campaign-status")?.addEventListener("change", (e) => {
+  if (!activeCampaignId || !campaigns[activeCampaignId]) return;
+  const newStatus = e.target.value;
+  updateDemoItem("campaigns", activeCampaignId, {
+    status: newStatus,
+    updatedBy: user?.name || "Unknown",
+    updatedAt: new Date().toISOString()
+  });
+  showToast(`Status campaign diubah ke "${newStatus}"!`);
+});
 
 function renderCampaignDropdown(query = "") {
   if (!cmpDropdown) return;
@@ -133,6 +183,7 @@ function renderCampaignDropdown(query = "") {
     return (c.name || "").toLowerCase().includes(q) ||
       brandName.toLowerCase().includes(q) ||
       (c.niche || "").toLowerCase().includes(q) ||
+      (c.status || "").toLowerCase().includes(q) ||
       (c.id || "").toLowerCase().includes(q);
   });
 
@@ -142,15 +193,19 @@ function renderCampaignDropdown(query = "") {
     cmpDropdown.innerHTML = matches.map(c => {
       const isSelected = c.id === activeCampaignId;
       const brandName = c.brand || c.client || "-";
+      const st = c.status || "Planning";
       return `
         <button type="button" data-id="${c.id}" class="opt-cmp w-full text-left px-3.5 py-2.5 hover:bg-rose-50 flex items-center justify-between gap-2 transition ${isSelected ? "bg-rose-50/70" : ""}">
-          <div>
-            <div class="font-bold text-slate-800">${c.name}</div>
-            <div class="text-[11px] text-slate-400">Brand: ${brandName} • Niche: ${c.niche || "-"}</div>
+          <div class="min-w-0">
+            <div class="font-bold text-slate-800 truncate">${c.name}</div>
+            <div class="text-[11px] text-slate-400 truncate">Brand: ${brandName} • Niche: ${c.niche || "-"}</div>
           </div>
-          <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${isSelected ? "bg-rose-500 text-white" : "bg-rose-50 text-rose-600"} shrink-0">
-            ${isSelected ? "Aktif" : "Pilih"}
-          </span>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full border ${getCampaignStatusBadgeClass(st)} max-w-[130px] truncate">${st}</span>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${isSelected ? "bg-rose-500 text-white" : "bg-rose-50 text-rose-600"}">
+              ${isSelected ? "Aktif" : "Pilih"}
+            </span>
+          </div>
         </button>
       `;
     }).join("");
@@ -409,14 +464,68 @@ if (closeCmpBtn) {
   closeCmpBtn.setAttribute("type", "button");
   closeCmpBtn.addEventListener("click", () => toggleModal("modal-campaign", false));
 }
-document.getElementById("btn-new-campaign").addEventListener("click", () => toggleModal("modal-campaign", true));
+
+document.getElementById("btn-new-campaign").addEventListener("click", () => {
+  document.getElementById("form-campaign").reset();
+  document.getElementById("c-edit-id").value = "";
+  document.getElementById("modal-campaign-title").textContent = "Buat Campaign Baru";
+  document.getElementById("btn-submit-campaign").textContent = "Simpan Campaign";
+  document.getElementById("btn-delete-campaign")?.classList.add("hidden");
+  toggleModal("modal-campaign", true);
+});
+
+document.getElementById("btn-edit-campaign")?.addEventListener("click", () => {
+  const active = campaigns[activeCampaignId];
+  if (!active) return;
+  document.getElementById("c-edit-id").value = active.id;
+  document.getElementById("c-name").value = active.name || "";
+  document.getElementById("c-brand").value = active.brand || active.client || "";
+  syncSelectOption(document.getElementById("c-niche"), active.niche || "Beauty");
+  syncSelectOption(document.getElementById("c-status"), active.status || "Planning");
+
+  document.getElementById("modal-campaign-title").textContent = "Edit Detail & Status Campaign";
+  document.getElementById("btn-submit-campaign").textContent = "Simpan Perubahan";
+  document.getElementById("btn-delete-campaign")?.classList.remove("hidden");
+  toggleModal("modal-campaign", true);
+});
+
+document.getElementById("btn-delete-campaign")?.addEventListener("click", async () => {
+  const editId = document.getElementById("c-edit-id").value;
+  const target = campaigns[editId];
+  if (!target) return;
+  const ok = await showConfirm("Hapus Campaign?", `Campaign "${target.name}" beserta seluruh shortlist KOL di dalamnya akan dihapus.`, "Ya, Hapus");
+  if (!ok) return;
+
+  if (activeCampaignId === editId) activeCampaignId = "";
+  removeDemoItem("campaigns", editId);
+  toggleModal("modal-campaign", false);
+  showToast("Campaign berhasil dihapus!");
+});
+
 document.getElementById("cancel-modal-campaign").addEventListener("click", () => toggleModal("modal-campaign", false));
 
 document.getElementById("form-campaign").addEventListener("submit", (e) => {
   e.preventDefault();
-  const id = "CMP-" + Date.now().toString().slice(-5);
+  const editId = document.getElementById("c-edit-id").value;
   const now = new Date().toISOString();
   const brandVal = document.getElementById("c-brand").value.trim();
+
+  if (editId && campaigns[editId]) {
+    updateDemoItem("campaigns", editId, {
+      name: document.getElementById("c-name").value.trim(),
+      brand: brandVal,
+      client: brandVal,
+      niche: document.getElementById("c-niche").value,
+      status: document.getElementById("c-status").value,
+      updatedBy: user?.name || "Unknown",
+      updatedAt: now
+    });
+    toggleModal("modal-campaign", false);
+    showToast("Perubahan campaign berhasil disimpan!");
+    return;
+  }
+
+  const id = "CMP-" + Date.now().toString().slice(-5);
   const newCmp = {
     id,
     name: document.getElementById("c-name").value.trim(),
